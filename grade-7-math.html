@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade 7 Math · Chapter 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;700;800&display=swap');
+
+:root {
+  --navy:#0f1035; --navy2:#161840; --teal:#00c9b1; --pink:#ff4d8d;
+  --yellow:#ffd200; --purple:#9b59f5; --white:#fff; --card:#1a1d4a;
+  --card2:#1f2257; --correct:#00e676; --wrong:#ff5252; --text:#ccd6f6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy);font-family:'Nunito',sans-serif;color:var(--white);min-height:100vh;overflow-x:hidden}
+
+/* ── GEO BG ── */
+.geo-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.geo-bg svg{width:100%;height:100%}
+
+/* ── CANVAS (particles) ── */
+#particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999}
+
+/* ══════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════ */
+#onboarding{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--navy);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:24px;
+  overflow-y:auto;
+  transition:opacity 0.6s,transform 0.6s;
+}
+#onboarding.hide{opacity:0;transform:scale(0.95);pointer-events:none}
+.ob-card{
+  background:var(--card);border-radius:28px;
+  padding:40px 44px;max-width:520px;width:100%;
+  border:2px solid rgba(0,201,177,0.35);
+  box-shadow:0 0 60px rgba(0,201,177,0.18),0 8px 40px rgba(0,0,0,0.5);
+  position:relative;overflow:hidden;
+  margin:auto 0;
+}
+.ob-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top left,rgba(155,89,245,0.08),transparent 60%);
+  pointer-events:none;
+}
+.ob-logo{
+  font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.8rem;
+  letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin-bottom:24px;
+}
+.ob-card h1{font-family:'Space Grotesk',sans-serif;font-size:1.9rem;font-weight:800;line-height:1.2;margin-bottom:8px}
+.ob-card h1 span{color:var(--teal)}
+.ob-sub{color:var(--text);font-size:0.95rem;margin-bottom:28px;line-height:1.6}
+.ob-label{font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--purple);font-weight:800;margin-bottom:8px}
+.ob-name-input{
+  width:100%;background:var(--card2);border:2px solid #2e325e;
+  border-radius:12px;padding:14px 18px;color:var(--white);
+  font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:700;
+  outline:none;margin-bottom:24px;transition:border-color 0.2s;
+}
+.ob-name-input:focus{border-color:var(--teal)}
+.ob-name-input::placeholder{color:#4a5080}
+.avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:28px}
+.avatar-opt{
+  cursor:pointer;border-radius:14px;padding:8px;
+  border:2.5px solid transparent;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--card2);
+}
+.avatar-opt:hover{border-color:var(--teal);transform:scale(1.08)}
+.avatar-opt.selected{border-color:var(--yellow);background:rgba(255,210,0,0.08);box-shadow:0 0 16px rgba(255,210,0,0.25)}
+.avatar-opt img{display:block;border-radius:8px}
+.ob-start-btn{
+  width:100%;background:var(--teal);color:var(--navy);
+  border:none;border-radius:14px;padding:16px;
+  font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.05rem;
+  cursor:pointer;transition:all 0.2s;letter-spacing:1px;
+}
+.ob-start-btn:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,201,177,0.35)}
+.ob-start-btn:disabled{opacity:0.35;cursor:default;transform:none;box-shadow:none}
+
+/* ══════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════ */
+#app{opacity:0;transition:opacity 0.5s;position:relative;z-index:10}
+#app.visible{opacity:1}
+
+/* HEADER */
+header{
+  padding:20px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+}
+.header-left{display:flex;align-items:center;gap:14px}
+.header-avatar{width:44px;height:44px;border-radius:12px;overflow:hidden;flex-shrink:0;
+  border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;background:var(--card2);
+  cursor:pointer;transition:border-color 0.2s,transform 0.2s}
+.header-avatar:hover{border-color:var(--yellow);transform:scale(1.1)}
+.header-avatar img{display:block;border-radius:8px}
+/* avatar change modal */
+#avatar-modal{
+  display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(5,7,30,0.82);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#avatar-modal.open{display:flex}
+.avatar-modal-box{
+  background:var(--card);border-radius:24px;padding:32px;
+  width:min(520px,94vw);border:1.5px solid var(--card2);
+  box-shadow:0 24px 64px rgba(0,0,0,0.55);
+}
+.avatar-modal-box h3{
+  font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:800;
+  margin:0 0 20px;color:var(--teal);letter-spacing:0.5px;
+}
+.avatar-modal-actions{display:flex;gap:10px;margin-top:24px}
+.avatar-modal-actions button{
+  flex:1;padding:13px;border-radius:12px;border:none;
+  font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:0.9rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-save-av{background:var(--teal);color:var(--navy)}
+.btn-save-av:hover{filter:brightness(1.1)}
+.btn-cancel-av{background:var(--card2);color:#8890c0}
+.btn-cancel-av:hover{background:#2a2f5a}
+.header-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem}
+.header-name span{color:var(--teal)}
+.header-right{display:flex;align-items:center;gap:12px}
+.score-badge{
+  background:var(--card);border:2px solid var(--yellow);
+  border-radius:30px;padding:8px 18px;
+  font-weight:800;font-size:0.9rem;color:var(--yellow);
+  display:flex;align-items:center;gap:6px;
+}
+.score-badge .score-num{
+  transition:transform 0.3s;display:inline-block;
+}
+.score-badge .score-num.pop{animation:scorePop 0.4s ease}
+@keyframes scorePop{0%{transform:scale(1)}50%{transform:scale(1.5) translateY(-3px)}100%{transform:scale(1)}}
+
+/* HERO */
+.hero{text-align:center;padding:32px 24px 16px;position:relative;z-index:10}
+.hero-tag{
+  display:inline-block;background:var(--purple);color:#fff;
+  font-weight:700;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;
+  padding:5px 16px;border-radius:20px;margin-bottom:12px;
+}
+.hero h1{
+  font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,5vw,3.4rem);
+  font-weight:800;line-height:1.1;margin-bottom:8px;
+}
+.hero h1 span{color:var(--teal)}
+.hero p{color:var(--text);font-size:0.95rem;max-width:500px;margin:0 auto}
+
+/* TABS */
+.tabs-outer{position:relative;z-index:10;padding:24px 0 0;display:flex;align-items:center}
+.tabs-arrow{
+  flex-shrink:0;width:36px;height:36px;border-radius:50%;
+  background:var(--card);border:2px solid var(--card2);
+  color:var(--text);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;z-index:2;
+}
+.tabs-arrow:hover{border-color:var(--teal);color:var(--teal)}
+.tabs-arrow.hidden{opacity:0;pointer-events:none}
+.tabs-arrow-left{margin-left:12px}
+.tabs-arrow-right{margin-right:12px}
+.tabs{
+  display:flex;justify-content:flex-start;gap:10px;
+  padding:0 12px;flex:1;
+}
+.tab-btn{
+  background:var(--card);border:2px solid transparent;
+  border-radius:14px;padding:11px 26px;
+  color:var(--text);font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:0.9rem;cursor:pointer;transition:all 0.25s;
+}
+.tab-btn:hover{border-color:var(--teal);color:var(--teal)}
+.tab-btn.active{background:var(--teal);color:var(--navy);border-color:var(--teal);box-shadow:0 0 24px rgba(0,201,177,0.4)}
+
+/* CONTENT */
+.content{max-width:860px;margin:0 auto;padding:28px 24px 80px;position:relative;z-index:10}
+.panels-wrapper{position:relative}
+.tab-panel{display:none;animation:none}
+.tab-panel.active{display:block}
+.tab-panel.slide-in-right{animation:slideInRight 0.4s cubic-bezier(.22,.68,0,1.2) both}
+.tab-panel.slide-in-left{animation:slideInLeft 0.4s cubic-bezier(.22,.68,0,1.2) both}
+.tab-panel.slide-out-left{animation:slideOutLeft 0.3s ease both}
+.tab-panel.slide-out-right{animation:slideOutRight 0.3s ease both}
+@keyframes slideInRight{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes slideOutLeft{from{opacity:1;transform:none}to{opacity:0;transform:translateX(-60px)}}
+@keyframes slideOutRight{from{opacity:1;transform:none}to{opacity:0;transform:translateX(60px)}}
+
+/* CONCEPT BOX */
+.concept-box{
+  background:linear-gradient(135deg,#1e215c,#252866);
+  border-left:5px solid var(--yellow);border-radius:20px;
+  padding:26px 30px;margin-bottom:24px;position:relative;overflow:hidden;
+}
+.concept-box::after{content:'💡';position:absolute;right:22px;top:18px;font-size:2.2rem;opacity:0.12}
+.concept-label{color:var(--yellow);font-weight:800;font-size:0.7rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px}
+.concept-box h2{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:12px}
+.concept-box p{color:var(--text);line-height:1.7;margin-bottom:10px}
+.concept-box p:last-child{margin-bottom:0}
+.concept-box strong{color:var(--white)}
+.highlight{color:var(--teal);font-weight:800}
+.highlight-pink{color:var(--pink);font-weight:800}
+.highlight-yellow{color:var(--yellow);font-weight:800}
+
+/* ANIMATED NUMBER LINES */
+.nl-wrap{background:var(--card);border-radius:16px;padding:20px;margin:14px 0;overflow-x:auto}
+.nl-wrap svg{display:block;width:100%;height:auto}
+.nl-axis{stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 0.9s ease}
+.nl-axis.drawn{stroke-dashoffset:0}
+.nl-dot{opacity:0;transition:opacity 0.3s,transform 0.4s}
+.nl-dot.appear{opacity:1;transform:scale(1)!important}
+.nl-dot{transform:scale(0)}
+.nl-label{opacity:0;transition:opacity 0.4s}
+.nl-label.appear{opacity:1}
+.nl-bracket{stroke-dasharray:200;stroke-dashoffset:200;transition:stroke-dashoffset 0.5s ease}
+.nl-bracket.drawn{stroke-dashoffset:0}
+
+/* CHIPS */
+.chip{display:inline-block;background:rgba(0,201,177,0.12);border:1.5px solid var(--teal);border-radius:8px;padding:3px 10px;font-size:0.88rem;font-weight:800;color:var(--teal);margin:2px}
+.chip-pink{background:rgba(255,77,141,0.12);border-color:var(--pink);color:var(--pink)}
+.chip-yellow{background:rgba(255,210,0,0.12);border-color:var(--yellow);color:var(--yellow)}
+
+/* EXAMPLE BLOCK */
+.example-block{background:rgba(0,0,0,0.2);border-radius:12px;padding:14px 18px;margin:12px 0;border-left:3px solid var(--purple)}
+.example-block .ex-label{font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--purple);font-weight:800;margin-bottom:6px}
+.example-block p{color:var(--text);font-size:0.92rem;line-height:1.6}
+
+/* PROGRESS */
+.progress-wrap{margin:0 0 24px}
+.progress-label{font-size:0.75rem;color:var(--text);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar{height:8px;background:var(--card2);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(to right,var(--teal),var(--purple));transition:width 0.6s cubic-bezier(.22,.68,0,1.2)}
+
+/* SECTION TITLE */
+.section-title{
+  font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;
+  color:var(--pink);letter-spacing:2px;text-transform:uppercase;
+  margin:30px 0 16px;display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:'';flex:1;height:2px;background:linear-gradient(to right,var(--pink),transparent)}
+
+/* Q CARDS */
+.q-card{
+  background:var(--card);border-radius:20px;padding:22px 26px;
+  margin-bottom:18px;border:2px solid transparent;
+  transition:border-color 0.3s,transform 0.15s;
+  display:flex;flex-wrap:wrap;align-items:flex-start;
+}
+.q-card:hover{border-color:var(--card2)}
+.q-card.shake{animation:shake 0.5s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-8px)}30%{transform:translateX(8px)}45%{transform:translateX(-6px)}60%{transform:translateX(6px)}75%{transform:translateX(-3px)}90%{transform:translateX(3px)}}
+.q-card.wrong-flash{animation:wrongFlash 0.5s ease}
+@keyframes wrongFlash{0%,100%{background:var(--card)}30%,70%{background:rgba(255,82,82,0.12)}}
+.q-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;background:var(--purple);
+  color:#fff;font-weight:900;font-size:0.8rem;margin-right:10px;flex-shrink:0;
+}
+.q-text{font-size:0.97rem;font-weight:700;line-height:1.5;margin-bottom:16px;color:var(--white);flex:1;min-width:0}
+.choices,.feedback,.ans-row{flex-basis:100%;width:100%}
+.q-text-inner{flex:1}
+
+/* CHOICES */
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:540px){.choices{grid-template-columns:1fr}}
+.choice-btn{
+  background:var(--card2);border:2px solid #2e325e;border-radius:12px;
+  padding:12px 16px;color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:0.93rem;font-weight:700;cursor:pointer;text-align:left;transition:all 0.2s;
+}
+.choice-btn:hover:not(:disabled){border-color:var(--teal);color:var(--white);transform:translateY(-1px)}
+.choice-btn.correct{background:rgba(0,230,118,0.15);border-color:var(--correct);color:var(--correct)}
+.choice-btn.wrong{background:rgba(255,82,82,0.15);border-color:var(--wrong);color:var(--wrong)}
+.choice-btn:disabled{cursor:default}
+
+/* TYPED INPUT */
+.input-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ans-input{
+  background:var(--card2);border:2px solid #2e325e;border-radius:12px;
+  padding:12px 18px;color:var(--white);font-family:'Nunito',sans-serif;
+  font-size:1rem;font-weight:700;width:160px;outline:none;transition:border-color 0.2s;
+}
+.ans-input:focus{border-color:var(--teal)}
+.ans-input.correct{border-color:var(--correct);background:rgba(0,230,118,0.08)}
+.ans-input.wrong{border-color:var(--wrong);background:rgba(255,82,82,0.08)}
+.check-btn{
+  background:var(--teal);color:var(--navy);border:none;border-radius:12px;
+  padding:12px 22px;font-family:'Nunito',sans-serif;font-weight:900;font-size:0.93rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.check-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.check-btn:disabled{opacity:0.35;cursor:default;transform:none}
+
+/* REVEAL */
+.reveal-btn{
+  background:transparent;border:2px solid var(--purple);border-radius:12px;
+  padding:11px 22px;color:var(--purple);font-family:'Nunito',sans-serif;
+  font-weight:800;font-size:0.88rem;cursor:pointer;transition:all 0.2s;margin-top:12px;
+}
+.reveal-btn:hover{background:var(--purple);color:#fff}
+.reveal-btn:disabled{opacity:0.4;cursor:default}
+
+/* FEEDBACK */
+.feedback{margin-top:14px;padding:14px 18px;border-radius:12px;font-size:0.93rem;line-height:1.6;display:none}
+.feedback.show{display:block;animation:feedbackIn 0.35s cubic-bezier(.22,.68,0,1.2)}
+@keyframes feedbackIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.feedback.correct-fb{background:rgba(0,230,118,0.08);border-left:4px solid var(--correct);color:#b9f6ca}
+.feedback.wrong-fb{background:rgba(255,82,82,0.08);border-left:4px solid var(--wrong);color:#ffcdd2}
+.feedback.reveal-fb{background:rgba(155,89,245,0.1);border-left:4px solid var(--purple);color:#e1bee7}
+.feedback strong{color:var(--white)}
+
+
+
+/* CELEBRATION */
+.celebration{
+  display:none;text-align:center;padding:36px 24px;
+  background:var(--card);border-radius:24px;
+  border:2px solid var(--yellow);margin-top:24px;
+}
+.celebration.show{display:block;animation:feedbackIn 0.5s ease}
+.celebration h3{font-size:1.8rem;margin-bottom:6px}
+.celebration p{color:var(--text)}
+
+/* RESET */
+.reset-wrap{text-align:center;padding:16px 0 44px;position:relative;z-index:10}
+.reset-btn{
+  background:transparent;border:1px solid #2e325e;border-radius:8px;
+  padding:7px 18px;color:#3a3f6e;font-family:'Nunito',sans-serif;
+  font-size:0.78rem;cursor:pointer;transition:all 0.2s;
+}
+.reset-btn:hover{border-color:var(--wrong);color:var(--wrong)}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+
+/* Tabs: horizontal scroll on all sizes so they never wrap to 2 rows */
+.tabs{
+  flex-wrap:nowrap;overflow-x:auto;
+  padding-left:16px;padding-right:16px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{white-space:nowrap;flex-shrink:0}
+
+@media(max-width:768px){
+  /* header */
+  header{padding:14px 18px;gap:10px}
+  .header-name{font-size:0.9rem}
+
+  /* onboarding card */
+  .ob-card{padding:28px 20px}
+  .ob-card h1{font-size:1.5rem}
+
+  /* hero */
+  .hero{padding:20px 16px 10px}
+
+  /* tabs */
+  .tabs{padding:16px 12px 0;gap:6px}
+  .tab-btn{padding:9px 16px;font-size:0.82rem}
+
+  /* content */
+  .content{padding:20px 14px 60px}
+
+  /* concept box */
+  .concept-box{padding:18px 18px}
+  .concept-box h2{font-size:1.2rem}
+
+  /* q-cards */
+  .q-card{padding:16px 16px}
+
+  /* input */
+  .ans-input{width:100%}
+  .input-row{flex-direction:column;align-items:stretch}
+  .check-btn{width:100%}
+  .reveal-btn{width:100%}
+
+  /* avatar grid: 4 cols on tablet */
+  .avatar-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+@media(max-width:480px){
+  /* header */
+  header{padding:10px 14px}
+  .header-avatar{width:38px;height:38px}
+  .score-badge{padding:6px 12px;font-size:0.82rem}
+
+  /* onboarding card */
+  .ob-card{padding:22px 16px;border-radius:20px}
+  .ob-card h1{font-size:1.3rem}
+  .ob-sub{font-size:0.88rem}
+
+  /* hero */
+  .hero{padding:16px 14px 8px}
+  .hero p{font-size:0.88rem}
+
+  /* tabs */
+  .tabs{gap:5px}
+  .tab-btn{padding:8px 13px;font-size:0.78rem;border-radius:10px}
+
+  /* concept box */
+  .concept-box{padding:14px 14px}
+  .concept-box::after{display:none}
+
+  /* q-card */
+  .q-card{padding:14px 12px;border-radius:14px}
+  .q-text{font-size:0.92rem}
+  .choice-btn{font-size:0.88rem;padding:10px 12px}
+
+  /* avatar grid: 4 cols still fits at 480px */
+  .avatar-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+
+  /* avatar modal */
+  .avatar-modal-box{padding:20px 14px;border-radius:18px}
+
+  /* celebration */
+  .celebration{padding:24px 14px}
+  .celebration h3{font-size:1.4rem}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Particle canvas -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- Geometric BG -->
+<div class="geo-bg">
+<svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <g opacity="0.06" transform="rotate(-18,160,230)">
+    <rect x="-80" y="60" width="380" height="380" fill="none" stroke="#fff" stroke-width="1"/>
+    <line x1="37" y1="60" x2="37" y2="440" stroke="#fff" stroke-width="0.5"/>
+    <line x1="134" y1="60" x2="134" y2="440" stroke="#fff" stroke-width="0.5"/>
+    <line x1="231" y1="60" x2="231" y2="440" stroke="#fff" stroke-width="0.5"/>
+    <line x1="-80" y1="157" x2="300" y2="157" stroke="#fff" stroke-width="0.5"/>
+    <line x1="-80" y1="254" x2="300" y2="254" stroke="#fff" stroke-width="0.5"/>
+    <line x1="-80" y1="351" x2="300" y2="351" stroke="#fff" stroke-width="0.5"/>
+  </g>
+  <clipPath id="c1"><circle cx="430" cy="130" r="100"/></clipPath>
+  <circle cx="430" cy="130" r="100" fill="none" stroke="#9b59f5" stroke-width="2" opacity="0.5"/>
+  <g clip-path="url(#c1)" opacity="0.4">
+    <line x1="330" y1="60" x2="530" y2="260" stroke="#9b59f5" stroke-width="8"/>
+    <line x1="345" y1="45" x2="545" y2="245" stroke="#9b59f5" stroke-width="8"/>
+    <line x1="360" y1="30" x2="560" y2="230" stroke="#9b59f5" stroke-width="8"/>
+    <line x1="315" y1="75" x2="515" y2="275" stroke="#9b59f5" stroke-width="8"/>
+    <line x1="300" y1="90" x2="500" y2="290" stroke="#9b59f5" stroke-width="8"/>
+  </g>
+  <polygon points="600,40 640,110 560,110" fill="none" stroke="#ffd200" stroke-width="2.5" opacity="0.6"/>
+  <polygon points="1100,600 1150,700 1050,700" fill="none" stroke="#ffd200" stroke-width="2.5" opacity="0.45"/>
+  <polygon points="50,700 90,770 10,770" fill="white" opacity="0.07"/>
+  <circle cx="220" cy="650" r="140" fill="none" stroke="#00c9b1" stroke-width="3" opacity="0.35"/>
+  <circle cx="220" cy="650" r="20" fill="white" opacity="0.12"/>
+  <circle cx="600" cy="80" r="18" fill="#ffd200" opacity="0.5"/>
+  <circle cx="80" cy="180" r="12" fill="none" stroke="#ff4d8d" stroke-width="2.5" opacity="0.65"/>
+  <circle cx="1200" cy="150" r="22" fill="none" stroke="#ff4d8d" stroke-width="2" opacity="0.35"/>
+  <line x1="-50" y1="600" x2="520" y2="900" stroke="#ff4d8d" stroke-width="4" opacity="0.3"/>
+  <path d="M900 500 q15,-15 30,0 q15,15 30,0 q15,-15 30,0 q15,15 30,0" fill="none" stroke="#ff4d8d" stroke-width="2.5" opacity="0.45"/>
+  <path d="M200 400 q10,-10 20,0 q10,10 20,0 q10,-10 20,0" fill="none" stroke="#ffd200" stroke-width="2" opacity="0.35"/>
+  <g opacity="0.18" fill="white">
+    <circle cx="720" cy="60" r="3"/><circle cx="740" cy="60" r="3"/><circle cx="760" cy="60" r="3"/>
+    <circle cx="780" cy="60" r="3"/><circle cx="800" cy="60" r="3"/>
+    <circle cx="720" cy="80" r="3"/><circle cx="740" cy="80" r="3"/><circle cx="760" cy="80" r="3"/>
+    <circle cx="780" cy="80" r="3"/><circle cx="800" cy="80" r="3"/>
+    <circle cx="720" cy="100" r="3"/><circle cx="740" cy="100" r="3"/><circle cx="760" cy="100" r="3"/>
+  </g>
+  <circle cx="1300" cy="500" r="180" fill="none" stroke="#00c9b1" stroke-width="2" opacity="0.12"/>
+</svg>
+</div>
+
+<!-- ══════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════ -->
+<div id="onboarding">
+<div class="ob-card">
+  <div class="ob-logo">⚡ Grade 7 Math · Chapter 1</div>
+  <h1>Welcome to<br><span>Chapter 1</span></h1>
+  <p class="ob-sub">Adding &amp; Subtracting Rational Numbers — let's make it fun. First, tell us who you are!</p>
+  <div class="ob-label">Your Name</div>
+  <input class="ob-name-input" id="ob-name" type="text" placeholder="Type your name…" maxlength="24" oninput="checkObReady()">
+  <div class="ob-label" style="margin-bottom:12px">Pick Your Avatar</div>
+  <div class="avatar-grid" id="avatar-grid">
+    <!-- avatars injected by JS -->
+  </div>
+  <button class="ob-start-btn" id="ob-start" disabled onclick="startApp()">Let's Go! →</button>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
+<div id="app">
+
+<header>
+  <div class="header-left">
+    <div class="header-avatar" id="header-avatar" onclick="openAvatarModal()" title="Change avatar"></div>
+    <div class="header-name">Hey, <span id="header-name">Student</span>!</div>
+  </div>
+  <div class="header-right">
+    <div class="score-badge">⭐ <span class="score-num" id="score-display">0</span> / <span id="total-display">0</span></div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">Chapter 1</div>
+  <h1>Chapter 1 · <span>Rational Numbers</span></h1>
+  <p>Eleven lessons covering absolute value, comparing rational numbers, integer operations, fractions, decimals, and real-world applications.</p>
+</div>
+
+<div class="tabs-outer">
+  <button class="tabs-arrow tabs-arrow-left hidden" id="tabs-prev" onclick="scrollTabs(-1)" aria-label="Previous">&#8249;</button>
+  <div class="tabs" id="tabs-row">
+    <button class="tab-btn active" id="tab-l1" onclick="switchTab('l1')">Lesson 1.1 · Absolute Value</button>
+    <button class="tab-btn" id="tab-l2" onclick="switchTab('l2')">Lesson 1.2 · Comparing &amp; Ordering</button>
+    <button class="tab-btn" id="tab-l3" onclick="switchTab('l3')">Lesson 1.3 · Additive Inverse</button>
+    <button class="tab-btn" id="tab-l4" onclick="switchTab('l4')">Lesson 1.4 · Adding Integers</button>
+    <button class="tab-btn" id="tab-l5" onclick="switchTab('l5')">Lesson 1.5 · Subtracting Integers</button>
+    <button class="tab-btn" id="tab-l6" onclick="switchTab('l6')">Lesson 1.6 · Multiplying &amp; Dividing Integers</button>
+    <button class="tab-btn" id="tab-l7" onclick="switchTab('l7')">Lesson 1.7 · Adding &amp; Subtracting Fractions</button>
+    <button class="tab-btn" id="tab-l8" onclick="switchTab('l8')">Lesson 1.8 · Multiplying &amp; Dividing Fractions</button>
+    <button class="tab-btn" id="tab-l9" onclick="switchTab('l9')">Lesson 1.9 · Fractions &amp; Decimals</button>
+    <button class="tab-btn" id="tab-l10" onclick="switchTab('l10')">Lesson 1.10 · Mathematical Properties</button>
+    <button class="tab-btn" id="tab-l11" onclick="switchTab('l11')">Lesson 1.11 · Real-World Problems</button>
+  </div>
+  <button class="tabs-arrow tabs-arrow-right" id="tabs-next" onclick="scrollTabs(1)" aria-label="Next">&#8250;</button>
+</div>
+
+<div class="content">
+<div class="panels-wrapper">
+
+
+<!-- ══════════════════════════ LESSON 1 — Integers & Absolute Value ══════════════════════════ -->
+<div class="tab-panel active" id="panel-l1">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.1 · Integers &amp; Absolute Value</h2>
+    <p>An <span class="chip">integer</span> is any whole number, its opposite, or zero: … −3, −2, −1, 0, 1, 2, 3 …</p>
+    <p style="margin-top:10px;">The <span class="chip-pink">absolute value</span> of a number is its <strong>distance from zero</strong> on a number line — distance is always <em>non-negative</em>.</p>
+    <div class="example-block" style="margin-top:12px;">
+      <span class="highlight-yellow">Key rule:</span><br>
+      |positive| = positive &nbsp;·&nbsp; |negative| = positive &nbsp;·&nbsp; |0| = 0<br>
+      <span style="color:#aaa;font-size:0.9em;">e.g. |−7| = 7 and |+7| = 7 → opposites share the same absolute value</span>
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aT1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--teal)"/></marker>
+          <marker id="aP1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--pink)"/></marker>
+        </defs>
+        <line class="nl-axis" x1="30" y1="56" x2="490" y2="56" stroke="#ccd6f6" stroke-width="2"/>
+        <g stroke="#ccd6f6" stroke-width="1.5">
+          <line x1="80"  y1="50" x2="80"  y2="62"/><line x1="145" y1="50" x2="145" y2="62"/>
+          <line x1="210" y1="50" x2="210" y2="62"/><line x1="275" y1="48" x2="275" y2="64" stroke-width="2"/>
+          <line x1="340" y1="50" x2="340" y2="62"/><line x1="405" y1="50" x2="405" y2="62"/>
+          <line x1="470" y1="50" x2="470" y2="62"/>
+        </g>
+        <g fill="#ccd6f6" font-size="12" text-anchor="middle">
+          <text class="nl-label" x="80"  y="78" style="transition-delay:0.1s">−3</text>
+          <text class="nl-label" x="145" y="78" style="transition-delay:0.15s">−2</text>
+          <text class="nl-label" x="210" y="78" style="transition-delay:0.2s">−1</text>
+          <text class="nl-label" x="275" y="78" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.25s">0</text>
+          <text class="nl-label" x="340" y="78" style="transition-delay:0.3s">1</text>
+          <text class="nl-label" x="405" y="78" style="transition-delay:0.35s">2</text>
+          <text class="nl-label" x="470" y="78" style="transition-delay:0.4s">3</text>
+        </g>
+        <line class="nl-bracket" x1="268" y1="28" x2="80"  y2="28" stroke="var(--pink)" stroke-width="2.5" marker-end="url(#aP1)" style="transition-delay:0.5s"/>
+        <text class="nl-label" x="178" y="20" fill="var(--pink)" font-size="11" text-anchor="middle" style="transition-delay:0.6s">|−3| = 3</text>
+        <line class="nl-bracket" x1="282" y1="36" x2="470" y2="36" stroke="var(--teal)" stroke-width="2.5" marker-end="url(#aT1)" style="transition-delay:0.7s"/>
+        <text class="nl-label" x="372" y="28" fill="var(--teal)" font-size="11" text-anchor="middle" style="transition-delay:0.8s">|+3| = 3</text>
+        <circle class="nl-dot" cx="275" cy="56" r="5" fill="var(--yellow)" style="transition-delay:0.45s"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l1" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l1-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q1">
+    <div class="q-num">1</div>
+    <div class="q-text">Point A is at −4 and Point B is at +4 on a number line. Which statement is <em>true</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q1',false)">A) |A| &gt; |B|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q1',true)">B) |A| = |B|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q1',false)">C) |A| &lt; |B|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q1',false)">D) |B| = 0</button>
+    </div>
+    <div class="feedback" id="fb-q1"></div>
+  </div>
+
+  <div class="q-card" id="q2">
+    <div class="q-num">2</div>
+    <div class="q-text">Both X and Y are negative numbers, and |X| &gt; |Y|. Which number is <em>closer to zero</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q2',false)">A) X is closer</button>
+      <button class="choice-btn" onclick="checkMC(this,'q2',true)">B) Y is closer</button>
+      <button class="choice-btn" onclick="checkMC(this,'q2',false)">C) They are equidistant</button>
+      <button class="choice-btn" onclick="checkMC(this,'q2',false)">D) Cannot be determined</button>
+    </div>
+    <div class="feedback" id="fb-q2"></div>
+  </div>
+
+  <div class="q-card" id="q3">
+    <div class="q-num">3</div>
+    <div class="q-text">Calculate: |−45| − |+30| = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q3" type="number" placeholder="Your answer">
+      <button class="check-btn" onclick="checkTyped('q3','15',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q3"></div>
+  </div>
+
+  <div class="q-card" id="q4">
+    <div class="q-num">4</div>
+    <div class="q-text">True or False: Opposite numbers always have equal absolute values.</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q4',true)">A) True</button>
+      <button class="choice-btn" onclick="checkMC(this,'q4',false)">B) False</button>
+    </div>
+    <div class="feedback" id="fb-q4"></div>
+  </div>
+
+  <div class="q-card" id="q5">
+    <div class="q-num">5</div>
+    <div class="q-text">Which expression has the <em>largest</em> absolute value?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q5',false)">A) |−3.5|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q5',false)">B) |+2.9|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q5',true)">C) |−4.1|</button>
+      <button class="choice-btn" onclick="checkMC(this,'q5',false)">D) |+3.8|</button>
+    </div>
+    <div class="feedback" id="fb-q5"></div>
+  </div>
+
+  <div class="celebration" id="cel-l1">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.1 Complete!</h3>
+    <p>You mastered Integers &amp; Absolute Value. Ready for the next challenge?</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l2')">Next: Lesson 1.2 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 2 — Comparing & Ordering ══════════════════════════ -->
+<div class="tab-panel" id="panel-l2">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.2 · Comparing &amp; Ordering Rational Numbers</h2>
+    <p>A <span class="chip">rational number</span> is any number writable as a fraction p/q (q ≠ 0). This includes integers, fractions, and terminating/repeating decimals.</p>
+    <div class="example-block" style="margin-top:12px;">
+      <span class="highlight-yellow">Three rules for comparing:</span><br>
+      <strong>1.</strong> On a number line, numbers get <span class="highlight">larger going right →</span><br>
+      <strong>2.</strong> To compare fractions, find a <span class="chip-pink">common denominator</span> first<br>
+      <strong>3.</strong> For negatives: <em>less negative = larger</em> &nbsp;(−1 &gt; −3, because −1 is further right)
+    </div>
+    <p style="margin-top:10px;font-size:0.9em;color:#aaa;">Example: order −3/2, −1/2, 0, 3/4, 5/4 → convert to decimals: −1.5, −0.5, 0, 0.75, 1.25</p>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 108" xmlns="http://www.w3.org/2000/svg">
+        <text class="nl-label" x="60"  y="16" fill="#888" font-size="10" text-anchor="middle" style="transition-delay:0.05s">← smaller</text>
+        <text class="nl-label" x="460" y="16" fill="#888" font-size="10" text-anchor="middle" style="transition-delay:0.05s">larger →</text>
+        <line x1="30" y1="12" x2="490" y2="12" stroke="#444" stroke-width="1" stroke-dasharray="4,3"/>
+        <line class="nl-axis" x1="30" y1="56" x2="490" y2="56" stroke="#ccd6f6" stroke-width="2"/>
+        <g stroke="#ccd6f6" stroke-width="1.5">
+          <line x1="40"  y1="50" x2="40"  y2="62"/><line x1="150" y1="50" x2="150" y2="62"/>
+          <line x1="260" y1="48" x2="260" y2="64" stroke-width="2"/><line x1="370" y1="50" x2="370" y2="62"/>
+          <line x1="480" y1="50" x2="480" y2="62"/>
+        </g>
+        <g fill="#ccd6f6" font-size="11" text-anchor="middle">
+          <text class="nl-label" x="40"  y="76" style="transition-delay:0.1s">−2</text>
+          <text class="nl-label" x="150" y="76" style="transition-delay:0.15s">−1</text>
+          <text class="nl-label" x="260" y="76" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.2s">0</text>
+          <text class="nl-label" x="370" y="76" style="transition-delay:0.25s">1</text>
+          <text class="nl-label" x="480" y="76" style="transition-delay:0.3s">2</text>
+        </g>
+        <circle class="nl-dot" cx="95"  cy="56" r="7" fill="var(--pink)"   style="transition-delay:0.35s"/>
+        <text class="nl-label" x="95"  y="45" fill="var(--pink)"   font-size="10" text-anchor="middle" style="transition-delay:0.4s">−3/2</text>
+        <text class="nl-label" x="95"  y="96" fill="var(--pink)"   font-size="9"  text-anchor="middle" style="transition-delay:0.42s">−1.5</text>
+        <circle class="nl-dot" cx="205" cy="56" r="7" fill="var(--purple)" style="transition-delay:0.45s"/>
+        <text class="nl-label" x="205" y="45" fill="var(--purple)" font-size="10" text-anchor="middle" style="transition-delay:0.5s">−1/2</text>
+        <text class="nl-label" x="205" y="96" fill="var(--purple)" font-size="9"  text-anchor="middle" style="transition-delay:0.52s">−0.5</text>
+        <circle class="nl-dot" cx="260" cy="56" r="7" fill="var(--yellow)" style="transition-delay:0.55s"/>
+        <text class="nl-label" x="260" y="96" fill="var(--yellow)" font-size="9"  text-anchor="middle" style="transition-delay:0.57s">0</text>
+        <circle class="nl-dot" cx="343" cy="56" r="7" fill="var(--teal)"   style="transition-delay:0.6s"/>
+        <text class="nl-label" x="343" y="45" fill="var(--teal)"   font-size="10" text-anchor="middle" style="transition-delay:0.65s">3/4</text>
+        <text class="nl-label" x="343" y="96" fill="var(--teal)"   font-size="9"  text-anchor="middle" style="transition-delay:0.67s">0.75</text>
+        <circle class="nl-dot" cx="398" cy="56" r="7" fill="var(--teal)"   style="transition-delay:0.7s"/>
+        <text class="nl-label" x="398" y="45" fill="var(--teal)"   font-size="10" text-anchor="middle" style="transition-delay:0.75s">5/4</text>
+        <text class="nl-label" x="398" y="96" fill="var(--teal)"   font-size="9"  text-anchor="middle" style="transition-delay:0.77s">1.25</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l2" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l2-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q6">
+    <div class="q-num">1</div>
+    <div class="q-text">Which statement is <em>true</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q6',true)">A) −3/4 &lt; −1/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q6',false)">B) −1/2 &lt; −3/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q6',false)">C) −3/4 = −1/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q6',false)">D) You can't compare fractions and decimals</button>
+    </div>
+    <div class="feedback" id="fb-q6"></div>
+  </div>
+
+  <div class="q-card" id="q7">
+    <div class="q-num">2</div>
+    <div class="q-text">Order these numbers from <em>least to greatest</em>: −1, −2/3, 0.3, 1/2</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q7',true)">A) −1, −2/3, 0.3, 1/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q7',false)">B) −2/3, −1, 0.3, 1/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q7',false)">C) 1/2, 0.3, −2/3, −1</button>
+      <button class="choice-btn" onclick="checkMC(this,'q7',false)">D) −1, 0.3, −2/3, 1/2</button>
+    </div>
+    <div class="feedback" id="fb-q7"></div>
+  </div>
+
+  <div class="q-card" id="q8">
+    <div class="q-num">3</div>
+    <div class="q-text">Which number is the <em>greatest</em>? &nbsp; −0.8 &nbsp; −7/8 &nbsp; −4/5 &nbsp; −0.75</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q8',false)">A) −0.8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q8',false)">B) −7/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q8',false)">C) −4/5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q8',true)">D) −0.75</button>
+    </div>
+    <div class="feedback" id="fb-q8"></div>
+  </div>
+
+  <div class="q-card" id="q9">
+    <div class="q-num">4</div>
+    <div class="q-text">Emma says "−5/6 &gt; −3/4 because 5/6 &gt; 3/4." Is Emma correct?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q9',false)">A) Yes — she is right</button>
+      <button class="choice-btn" onclick="checkMC(this,'q9',true)">B) No — a larger fraction means more negative, which is <em>smaller</em></button>
+      <button class="choice-btn" onclick="checkMC(this,'q9',false)">C) Yes — negatives work the same as positives</button>
+      <button class="choice-btn" onclick="checkMC(this,'q9',false)">D) Can't tell without a number line</button>
+    </div>
+    <div class="feedback" id="fb-q9"></div>
+  </div>
+
+  <div class="q-card" id="q10">
+    <div class="q-num">5</div>
+    <div class="q-text">Which list is correctly ordered from <em>greatest to least</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q10',false)">A) −1/4, 0, 1/3, 3/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q10',true)">B) 3/4, 1/3, 0, −1/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q10',false)">C) 0, 1/3, 3/4, −1/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q10',false)">D) 3/4, 0, 1/3, −1/4</button>
+    </div>
+    <div class="feedback" id="fb-q10"></div>
+  </div>
+
+  <div class="celebration" id="cel-l2">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.2 Complete!</h3>
+    <p>Great work comparing rational numbers on the number line!</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l3')">Next: Lesson 1.3 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 3 — Additive Inverse ══════════════════════════ -->
+<div class="tab-panel" id="panel-l3">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.3 · Additive Inverse</h2>
+    <p>Two numbers are <span class="chip">additive inverses</span> if they add up to exactly <strong>zero</strong>.</p>
+    <div class="example-block" style="margin-top:12px;">
+      <span class="highlight-yellow">How to find the additive inverse:</span> flip the sign!<br>
+      Additive inverse of <span class="highlight-pink">+6.5</span> is <span class="highlight">−6.5</span> &nbsp;because&nbsp; 6.5 + (−6.5) = 0<br>
+      Additive inverse of <span class="highlight-pink">−3/4</span> is <span class="highlight">+3/4</span> &nbsp;because&nbsp; −3/4 + 3/4 = 0<br>
+      <span class="chip-yellow">Special:</span> 0 is its own additive inverse — 0 + 0 = 0
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aP3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--pink)"/></marker>
+          <marker id="aT3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--teal)"/></marker>
+        </defs>
+        <line class="nl-axis" x1="30" y1="56" x2="490" y2="56" stroke="#ccd6f6" stroke-width="2"/>
+        <g stroke="#ccd6f6" stroke-width="1.5">
+          <line x1="80"  y1="50" x2="80"  y2="62"/><line x1="153" y1="50" x2="153" y2="62"/>
+          <line x1="226" y1="50" x2="226" y2="62"/><line x1="300" y1="48" x2="300" y2="64" stroke-width="2"/>
+          <line x1="373" y1="50" x2="373" y2="62"/><line x1="446" y1="50" x2="446" y2="62"/>
+        </g>
+        <g fill="#ccd6f6" font-size="11" text-anchor="middle">
+          <text class="nl-label" x="80"  y="76" style="transition-delay:0.1s">−3</text>
+          <text class="nl-label" x="153" y="76" style="transition-delay:0.15s">−2</text>
+          <text class="nl-label" x="226" y="76" style="transition-delay:0.2s">−1</text>
+          <text class="nl-label" x="300" y="76" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.25s">0</text>
+          <text class="nl-label" x="373" y="76" style="transition-delay:0.3s">1</text>
+          <text class="nl-label" x="446" y="76" style="transition-delay:0.35s">2</text>
+        </g>
+        <circle class="nl-dot" cx="191" cy="56" r="7" fill="var(--pink)"   style="transition-delay:0.4s"/>
+        <text class="nl-label" x="191" y="45" fill="var(--pink)"   font-size="11" text-anchor="middle" style="transition-delay:0.45s">−1.5</text>
+        <circle class="nl-dot" cx="409" cy="56" r="7" fill="var(--teal)"   style="transition-delay:0.5s"/>
+        <text class="nl-label" x="409" y="45" fill="var(--teal)"   font-size="11" text-anchor="middle" style="transition-delay:0.55s">+1.5</text>
+        <line class="nl-bracket" x1="198" y1="30" x2="300" y2="30" stroke="var(--pink)" stroke-width="2.5" marker-end="url(#aP3)" style="transition-delay:0.65s"/>
+        <line class="nl-bracket" x1="402" y1="30" x2="300" y2="30" stroke="var(--teal)" stroke-width="2.5" marker-end="url(#aT3)" style="transition-delay:0.75s"/>
+        <text class="nl-label" x="300" y="20" fill="var(--yellow)" font-size="11" text-anchor="middle" style="transition-delay:0.85s">sum = 0 ✓</text>
+        <circle class="nl-dot" cx="300" cy="56" r="5" fill="var(--yellow)" style="transition-delay:0.6s"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l3" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l3-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q11">
+    <div class="q-num">1</div>
+    <div class="q-text">What is the additive inverse of −6.5?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q11',false)">A) −6.5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q11',true)">B) +6.5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q11',false)">C) 0</button>
+      <button class="choice-btn" onclick="checkMC(this,'q11',false)">D) 1/6.5</button>
+    </div>
+    <div class="feedback" id="fb-q11"></div>
+  </div>
+
+  <div class="q-card" id="q12">
+    <div class="q-num">2</div>
+    <div class="q-text">A hiker climbs <em>up</em> 250 feet, then descends the same distance. What is the net change in elevation?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q12',false)">A) +250 ft</button>
+      <button class="choice-btn" onclick="checkMC(this,'q12',false)">B) −250 ft</button>
+      <button class="choice-btn" onclick="checkMC(this,'q12',true)">C) 0 ft</button>
+      <button class="choice-btn" onclick="checkMC(this,'q12',false)">D) +500 ft</button>
+    </div>
+    <div class="feedback" id="fb-q12"></div>
+  </div>
+
+  <div class="q-card" id="q13">
+    <div class="q-num">3</div>
+    <div class="q-text">Sofia has $37.50 in her account. She withdraws the <em>additive inverse</em> of her balance. How many dollars did she withdraw? Enter a positive number.</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q13" type="number" placeholder="Your answer" step="0.01">
+      <button class="check-btn" onclick="checkTyped('q13','37.5',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q13"></div>
+  </div>
+
+  <div class="q-card" id="q14">
+    <div class="q-num">4</div>
+    <div class="q-text">Leo earned $27 doing chores and spent $27 on a game. Are these two amounts additive inverses? Type <strong>yes</strong> or <strong>no</strong>.</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q14" type="text" placeholder="yes or no">
+      <button class="check-btn" onclick="checkTyped('q14','yes',true)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q14"></div>
+  </div>
+
+  <div class="q-card" id="q15">
+    <div class="q-num">5</div>
+    <div class="q-text">Can a number ever be its own additive inverse? If so, which number?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q15',false)">A) No — no number can equal its own inverse</button>
+      <button class="choice-btn" onclick="checkMC(this,'q15',true)">B) Yes — only 0, because 0 + 0 = 0</button>
+      <button class="choice-btn" onclick="checkMC(this,'q15',false)">C) Yes — any positive number equals its own inverse</button>
+      <button class="choice-btn" onclick="checkMC(this,'q15',false)">D) Yes — both 1 and −1</button>
+    </div>
+    <div class="feedback" id="fb-q15"></div>
+  </div>
+
+  <div class="celebration" id="cel-l3">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.3 Complete!</h3>
+    <p>You understand additive inverses! Let's move on to adding integers.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l4')">Next: Lesson 1.4 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 4 — Adding Integers ══════════════════════════ -->
+<div class="tab-panel" id="panel-l4">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.4 · Adding Integers</h2>
+    <p><span class="chip">Same signs:</span> Add the absolute values, keep that sign.<br>
+    <span class="chip-pink">Different signs:</span> Subtract the smaller absolute value from the larger; keep the sign of whichever had the bigger absolute value.</p>
+    <div class="example-block" style="margin-top:10px;">
+      <strong>Same signs:</strong> −2 + (−3) → both negative → 2+3=5 → <span class="highlight-pink">−5</span><br>
+      <strong>Diff. signs:</strong> −3 + 5 → subtract: 5−3=2 → 5 is bigger &amp; positive → <span class="highlight">+2</span>
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 168" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aP4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--pink)"/></marker>
+          <marker id="aT4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--teal)"/></marker>
+        </defs>
+        <text class="nl-label" x="10" y="22" fill="var(--pink)" font-size="10" font-weight="bold" style="transition-delay:0s">SAME SIGNS: −2 + (−3) = −5</text>
+        <line class="nl-axis" x1="30" y1="62" x2="490" y2="62" stroke="#ccd6f6" stroke-width="1.5"/>
+        <g stroke="#ccd6f6" stroke-width="1.2" font-size="10" fill="#ccd6f6" text-anchor="middle">
+          <line x1="180" y1="57" x2="180" y2="67"/><text class="nl-label" x="180" y="80" style="transition-delay:0.1s">−5</text>
+          <line x1="232" y1="57" x2="232" y2="67"/><text class="nl-label" x="232" y="80" style="transition-delay:0.12s">−4</text>
+          <line x1="284" y1="57" x2="284" y2="67"/><text class="nl-label" x="284" y="80" style="transition-delay:0.14s">−3</text>
+          <line x1="336" y1="57" x2="336" y2="67"/><text class="nl-label" x="336" y="80" style="transition-delay:0.16s">−2</text>
+          <line x1="388" y1="57" x2="388" y2="67"/><text class="nl-label" x="388" y="80" style="transition-delay:0.18s">−1</text>
+          <line x1="440" y1="55" x2="440" y2="69" stroke-width="2"/><text class="nl-label" x="440" y="80" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.2s">0</text>
+        </g>
+        <circle class="nl-dot" cx="336" cy="62" r="6" fill="var(--pink)" style="transition-delay:0.3s"/>
+        <text class="nl-label" x="336" y="52" fill="var(--pink)" font-size="10" text-anchor="middle" style="transition-delay:0.35s">start</text>
+        <line class="nl-bracket" x1="330" y1="40" x2="180" y2="40" stroke="var(--pink)" stroke-width="2.5" marker-end="url(#aP4)" style="transition-delay:0.5s"/>
+        <text class="nl-label" x="259" y="32" fill="var(--pink)" font-size="10" text-anchor="middle" style="transition-delay:0.55s">move left 3</text>
+        <circle class="nl-dot" cx="180" cy="62" r="6" fill="var(--yellow)" style="transition-delay:0.6s"/>
+        <text class="nl-label" x="180" y="52" fill="var(--yellow)" font-size="10" text-anchor="middle" style="transition-delay:0.65s">= −5</text>
+
+        <text class="nl-label" x="10" y="100" fill="var(--teal)" font-size="10" font-weight="bold" style="transition-delay:0.05s">DIFF. SIGNS: −3 + 5 = +2</text>
+        <line class="nl-axis" x1="30" y1="136" x2="490" y2="136" stroke="#ccd6f6" stroke-width="1.5"/>
+        <g stroke="#ccd6f6" stroke-width="1.2" font-size="10" fill="#ccd6f6" text-anchor="middle">
+          <line x1="80"  y1="131" x2="80"  y2="141"/><text class="nl-label" x="80"  y="154" style="transition-delay:0.1s">−2</text>
+          <line x1="135" y1="131" x2="135" y2="141"/><text class="nl-label" x="135" y="154" style="transition-delay:0.12s">−1</text>
+          <line x1="190" y1="129" x2="190" y2="143" stroke-width="2"/><text class="nl-label" x="190" y="154" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.14s">0</text>
+          <line x1="245" y1="131" x2="245" y2="141"/><text class="nl-label" x="245" y="154" style="transition-delay:0.16s">1</text>
+          <line x1="300" y1="131" x2="300" y2="141"/><text class="nl-label" x="300" y="154" style="transition-delay:0.18s">2</text>
+          <line x1="355" y1="131" x2="355" y2="141"/><text class="nl-label" x="355" y="154" style="transition-delay:0.2s">3</text>
+          <line x1="410" y1="131" x2="410" y2="141"/><text class="nl-label" x="410" y="154" style="transition-delay:0.22s">4</text>
+          <line x1="465" y1="131" x2="465" y2="141"/><text class="nl-label" x="465" y="154" style="transition-delay:0.24s">5</text>
+        </g>
+        <circle class="nl-dot" cx="25" cy="136" r="6" fill="var(--teal)" style="transition-delay:0.7s"/>
+        <text class="nl-label" x="25" y="126" fill="var(--teal)" font-size="10" text-anchor="middle" style="transition-delay:0.75s">start</text>
+        <line class="nl-bracket" x1="32" y1="116" x2="300" y2="116" stroke="var(--teal)" stroke-width="2.5" marker-end="url(#aT4)" style="transition-delay:0.85s"/>
+        <text class="nl-label" x="162" y="108" fill="var(--teal)" font-size="10" text-anchor="middle" style="transition-delay:0.9s">move right 5</text>
+        <circle class="nl-dot" cx="300" cy="136" r="6" fill="var(--yellow)" style="transition-delay:0.95s"/>
+        <text class="nl-label" x="300" y="126" fill="var(--yellow)" font-size="10" text-anchor="middle" style="transition-delay:1.0s">= +2</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l4" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l4-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q16">
+    <div class="q-num">1</div>
+    <div class="q-text">When you add two negative integers, the result is <em>always</em>…</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q16',false)">A) Positive</button>
+      <button class="choice-btn" onclick="checkMC(this,'q16',true)">B) Negative</button>
+      <button class="choice-btn" onclick="checkMC(this,'q16',false)">C) Zero</button>
+      <button class="choice-btn" onclick="checkMC(this,'q16',false)">D) It depends on the numbers</button>
+    </div>
+    <div class="feedback" id="fb-q16"></div>
+  </div>
+
+  <div class="q-card" id="q17">
+    <div class="q-num">2</div>
+    <div class="q-text">What is −2 + (−3)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q17',true)">A) −5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q17',false)">B) +5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q17',false)">C) −1</button>
+      <button class="choice-btn" onclick="checkMC(this,'q17',false)">D) +1</button>
+    </div>
+    <div class="feedback" id="fb-q17"></div>
+  </div>
+
+  <div class="q-card" id="q18">
+    <div class="q-num">3</div>
+    <div class="q-text">What is −3 + 2?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q18',false)">A) +5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q18',false)">B) +1</button>
+      <button class="choice-btn" onclick="checkMC(this,'q18',false)">C) −5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q18',true)">D) −1</button>
+    </div>
+    <div class="feedback" id="fb-q18"></div>
+  </div>
+
+  <div class="q-card" id="q19">
+    <div class="q-num">4</div>
+    <div class="q-text">Dana estimates that 24.24 + (−27.8) ≈ −4. Is her estimate reasonable? (Actual answer ≈ −3.56)</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q19',true)">A) Yes — −4 is close to the actual answer of −3.56</button>
+      <button class="choice-btn" onclick="checkMC(this,'q19',false)">B) No — the answer should be positive</button>
+      <button class="choice-btn" onclick="checkMC(this,'q19',false)">C) No — the estimate is too far off</button>
+      <button class="choice-btn" onclick="checkMC(this,'q19',false)">D) Cannot determine without a calculator</button>
+    </div>
+    <div class="feedback" id="fb-q19"></div>
+  </div>
+
+  <div class="q-card" id="q20">
+    <div class="q-num">5</div>
+    <div class="q-text">Calculate: −2.5 + (−0.5) = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q20" type="number" placeholder="Your answer" step="0.1">
+      <button class="check-btn" onclick="checkTyped('q20','-3',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q20"></div>
+  </div>
+
+  <div class="celebration" id="cel-l4">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.4 Complete!</h3>
+    <p>Adding integers — nailed it! Subtraction is just one step away.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l5')">Next: Lesson 1.5 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 5 — Subtracting Integers ══════════════════════════ -->
+<div class="tab-panel" id="panel-l5">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.5 · Subtracting Integers</h2>
+    <p><span class="chip">Key rule:</span> Subtracting is the same as <strong>adding the opposite</strong>.</p>
+    <div class="example-block" style="margin-top:12px;">
+      <span class="highlight-yellow">Rewrite rule:</span> a − b = a + (−b)<br><br>
+      <strong>Example 1:</strong> 4 − 7 &nbsp;= 4 + (−7) = −3<br>
+      <strong>Example 2:</strong> 4 − (−7) = 4 + (+7) = 11 &nbsp;<span style="color:#aaa;font-size:0.9em;">(subtracting a negative = adding a positive!)</span><br>
+      <strong>Example 3:</strong> −5 − (−3) = −5 + 3 = −2
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 96" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aT5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="var(--teal)"/></marker>
+        </defs>
+        <text class="nl-label" x="10" y="16" fill="var(--teal)" font-size="10" font-weight="bold" style="transition-delay:0s">4 − (−7) = 4 + 7 = 11</text>
+        <line class="nl-axis" x1="30" y1="52" x2="490" y2="52" stroke="#ccd6f6" stroke-width="2"/>
+        <g stroke="#ccd6f6" stroke-width="1.2" font-size="10" fill="#ccd6f6" text-anchor="middle">
+          <line x1="70"  y1="47" x2="70"  y2="57"/><text class="nl-label" x="70"  y="70" fill="var(--yellow)" font-weight="bold" style="transition-delay:0.1s">0</text>
+          <line x1="108" y1="47" x2="108" y2="57"/><text class="nl-label" x="108" y="70" style="transition-delay:0.12s">1</text>
+          <line x1="146" y1="47" x2="146" y2="57"/><text class="nl-label" x="146" y="70" style="transition-delay:0.14s">2</text>
+          <line x1="184" y1="47" x2="184" y2="57"/><text class="nl-label" x="184" y="70" style="transition-delay:0.16s">3</text>
+          <line x1="222" y1="47" x2="222" y2="57"/><text class="nl-label" x="222" y="70" style="transition-delay:0.18s">4</text>
+          <line x1="260" y1="47" x2="260" y2="57"/><text class="nl-label" x="260" y="70" style="transition-delay:0.2s">5</text>
+          <line x1="298" y1="47" x2="298" y2="57"/><text class="nl-label" x="298" y="70" style="transition-delay:0.22s">6</text>
+          <line x1="336" y1="47" x2="336" y2="57"/><text class="nl-label" x="336" y="70" style="transition-delay:0.24s">7</text>
+          <line x1="374" y1="47" x2="374" y2="57"/><text class="nl-label" x="374" y="70" style="transition-delay:0.26s">8</text>
+          <line x1="412" y1="47" x2="412" y2="57"/><text class="nl-label" x="412" y="70" style="transition-delay:0.28s">9</text>
+          <line x1="450" y1="47" x2="450" y2="57"/><text class="nl-label" x="450" y="70" style="transition-delay:0.3s">10</text>
+          <line x1="488" y1="47" x2="488" y2="57"/><text class="nl-label" x="488" y="70" style="transition-delay:0.32s">11</text>
+        </g>
+        <circle class="nl-dot" cx="222" cy="52" r="6" fill="var(--teal)" style="transition-delay:0.4s"/>
+        <text class="nl-label" x="222" y="41" fill="var(--teal)" font-size="10" text-anchor="middle" style="transition-delay:0.45s">start: 4</text>
+        <line class="nl-bracket" x1="229" y1="28" x2="488" y2="28" stroke="var(--teal)" stroke-width="2.5" marker-end="url(#aT5)" style="transition-delay:0.6s"/>
+        <text class="nl-label" x="355" y="20" fill="var(--teal)" font-size="10" text-anchor="middle" style="transition-delay:0.65s">flip −7 → add +7</text>
+        <circle class="nl-dot" cx="488" cy="52" r="6" fill="var(--yellow)" style="transition-delay:0.7s"/>
+        <text class="nl-label" x="488" y="41" fill="var(--yellow)" font-size="10" text-anchor="middle" style="transition-delay:0.75s">= 11</text>
+        <text class="nl-label" x="260" y="88" fill="#888" font-size="10" text-anchor="middle" style="transition-delay:0.8s">Subtracting a negative is the same as adding a positive</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l5" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l5-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q21">
+    <div class="q-num">1</div>
+    <div class="q-text">Rewrite 4 − 7 as an <em>addition</em> problem.</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q21',true)">A) 4 + (−7)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q21',false)">B) −4 + 7</button>
+      <button class="choice-btn" onclick="checkMC(this,'q21',false)">C) 4 + 7</button>
+      <button class="choice-btn" onclick="checkMC(this,'q21',false)">D) −4 + (−7)</button>
+    </div>
+    <div class="feedback" id="fb-q21"></div>
+  </div>
+
+  <div class="q-card" id="q22">
+    <div class="q-num">2</div>
+    <div class="q-text">What is 4 − (−7)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q22',false)">A) −3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q22',false)">B) 3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q22',true)">C) 11</button>
+      <button class="choice-btn" onclick="checkMC(this,'q22',false)">D) −11</button>
+    </div>
+    <div class="feedback" id="fb-q22"></div>
+  </div>
+
+  <div class="q-card" id="q23">
+    <div class="q-num">3</div>
+    <div class="q-text">Jamal says 10 − (−10) = 0 because "the negatives cancel." What is the <em>correct</em> answer?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q23',false)">A) 0</button>
+      <button class="choice-btn" onclick="checkMC(this,'q23',true)">B) 20</button>
+      <button class="choice-btn" onclick="checkMC(this,'q23',false)">C) −20</button>
+      <button class="choice-btn" onclick="checkMC(this,'q23',false)">D) 10</button>
+    </div>
+    <div class="feedback" id="fb-q23"></div>
+  </div>
+
+  <div class="q-card" id="q24">
+    <div class="q-num">4</div>
+    <div class="q-text">Calculate: 4 − (−7.5) = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q24" type="number" placeholder="Your answer" step="0.1">
+      <button class="check-btn" onclick="checkTyped('q24','11.5',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q24"></div>
+  </div>
+
+  <div class="q-card" id="q25">
+    <div class="q-num">5</div>
+    <div class="q-text">Calculate: −17.56 − 13.43 = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q25" type="number" placeholder="Your answer" step="0.01">
+      <button class="check-btn" onclick="checkTyped('q25','-30.99',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q25"></div>
+  </div>
+
+  <div class="celebration" id="cel-l5">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.5 Complete!</h3>
+    <p>Subtraction mastered! Time to tackle multiplication and division.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l6')">Next: Lesson 1.6 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 6 — Multiplying & Dividing Integers ══════════════════════════ -->
+<div class="tab-panel" id="panel-l6">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.6 · Multiplying &amp; Dividing Integers</h2>
+    <p>The sign rules are the same for both × and ÷ — only the <strong>signs</strong> matter:</p>
+    <div class="example-block" style="margin-top:10px;">
+      <span class="chip">Same signs</span> → result is <strong style="color:var(--teal)">POSITIVE</strong><br>
+      <span class="chip-pink">Different signs</span> → result is <strong style="color:var(--pink)">NEGATIVE</strong><br><br>
+      (+3)×(+4) = <span class="highlight">+12</span> &nbsp;·&nbsp; (−3)×(−4) = <span class="highlight">+12</span><br>
+      (+3)×(−4) = <span class="highlight-pink">−12</span> &nbsp;·&nbsp; (−3)×(+4) = <span class="highlight-pink">−12</span>
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 162" xmlns="http://www.w3.org/2000/svg">
+        <!-- Header row labels -->
+        <text class="nl-label" x="55"  y="26" fill="#8892b0" font-size="12" font-weight="bold" text-anchor="middle" style="transition-delay:0.05s">× or ÷</text>
+        <text class="nl-label" x="220" y="26" fill="var(--teal)"   font-size="16" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">(+)</text>
+        <text class="nl-label" x="410" y="26" fill="var(--pink)"   font-size="16" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">(−)</text>
+        <!-- Row labels -->
+        <text class="nl-label" x="55" y="72"  fill="var(--teal)" font-size="16" font-weight="bold" text-anchor="middle" style="transition-delay:0.15s">(+)</text>
+        <text class="nl-label" x="55" y="122" fill="var(--pink)" font-size="16" font-weight="bold" text-anchor="middle" style="transition-delay:0.15s">(−)</text>
+        <!-- Grid cells -->
+        <rect x="100" y="34" width="230" height="50" rx="8" fill="rgba(0,201,177,0.18)" stroke="var(--teal)" stroke-width="1.5"/>
+        <rect x="345" y="34" width="165" height="50" rx="8" fill="rgba(255,77,141,0.18)" stroke="var(--pink)" stroke-width="1.5"/>
+        <rect x="100" y="92" width="230" height="50" rx="8" fill="rgba(255,77,141,0.18)" stroke="var(--pink)" stroke-width="1.5"/>
+        <rect x="345" y="92" width="165" height="50" rx="8" fill="rgba(0,201,177,0.18)" stroke="var(--teal)" stroke-width="1.5"/>
+        <!-- Cell results -->
+        <text class="nl-label" x="215" y="65"  fill="var(--teal)"   font-size="17" font-weight="bold" text-anchor="middle" style="transition-delay:0.3s">= (+) ✓</text>
+        <text class="nl-label" x="428" y="65"  fill="var(--pink)"   font-size="17" font-weight="bold" text-anchor="middle" style="transition-delay:0.35s">= (−) ✗</text>
+        <text class="nl-label" x="215" y="123" fill="var(--pink)"   font-size="17" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= (−) ✗</text>
+        <text class="nl-label" x="428" y="123" fill="var(--teal)"   font-size="17" font-weight="bold" text-anchor="middle" style="transition-delay:0.45s">= (+) ✓</text>
+        <!-- Bottom note clearly below grid -->
+        <text class="nl-label" x="260" y="156" fill="var(--yellow)" font-size="11" text-anchor="middle" style="transition-delay:0.55s">Same signs → POSITIVE · Different signs → NEGATIVE</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l6" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l6-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q26">
+    <div class="q-num">1</div>
+    <div class="q-text">What is (−4) × (−5)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q26',false)">A) −20</button>
+      <button class="choice-btn" onclick="checkMC(this,'q26',true)">B) +20</button>
+      <button class="choice-btn" onclick="checkMC(this,'q26',false)">C) −9</button>
+      <button class="choice-btn" onclick="checkMC(this,'q26',false)">D) +1</button>
+    </div>
+    <div class="feedback" id="fb-q26"></div>
+  </div>
+
+  <div class="q-card" id="q27">
+    <div class="q-num">2</div>
+    <div class="q-text">What is (+6) × (−3)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q27',false)">A) +18</button>
+      <button class="choice-btn" onclick="checkMC(this,'q27',true)">B) −18</button>
+      <button class="choice-btn" onclick="checkMC(this,'q27',false)">C) −9</button>
+      <button class="choice-btn" onclick="checkMC(this,'q27',false)">D) +2</button>
+    </div>
+    <div class="feedback" id="fb-q27"></div>
+  </div>
+
+  <div class="q-card" id="q28">
+    <div class="q-num">3</div>
+    <div class="q-text">What is −36 ÷ (−9)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q28',true)">A) +4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q28',false)">B) −4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q28',false)">C) +3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q28',false)">D) −3</button>
+    </div>
+    <div class="feedback" id="fb-q28"></div>
+  </div>
+
+  <div class="q-card" id="q29">
+    <div class="q-num">4</div>
+    <div class="q-text">The temperature drops 3°F every hour for 5 hours. What is the total temperature change?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q29',false)">A) +15°F</button>
+      <button class="choice-btn" onclick="checkMC(this,'q29',true)">B) −15°F</button>
+      <button class="choice-btn" onclick="checkMC(this,'q29',false)">C) +8°F</button>
+      <button class="choice-btn" onclick="checkMC(this,'q29',false)">D) −8°F</button>
+    </div>
+    <div class="feedback" id="fb-q29"></div>
+  </div>
+
+  <div class="q-card" id="q30">
+    <div class="q-num">5</div>
+    <div class="q-text">Which expression gives a <em>positive</em> result?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q30',false)">A) (+2) × (−3)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q30',false)">B) (+5) ÷ (−1)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q30',true)">C) (−3) × (−7)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q30',false)">D) (−10) ÷ (+2)</button>
+    </div>
+    <div class="feedback" id="fb-q30"></div>
+  </div>
+
+  <div class="celebration" id="cel-l6">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.6 Complete!</h3>
+    <p>Sign rules conquered! Now let's work with adding and subtracting fractions.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l7')">Next: Lesson 1.7 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 7 — Add & Sub Fractions/Decimals ══════════════════════════ -->
+<div class="tab-panel" id="panel-l7">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.7 · Adding &amp; Subtracting Rational Numbers</h2>
+    <p><span class="chip">Fractions:</span> You <em>must</em> have a common denominator before adding or subtracting.</p>
+    <div class="example-block" style="margin-top:10px;">
+      <span class="highlight-yellow">3 Steps for fractions:</span><br>
+      <strong>Step 1:</strong> Find the <span class="chip-pink">LCD</span> (Least Common Denominator)<br>
+      <strong>Step 2:</strong> Convert each fraction to an equivalent fraction with that LCD<br>
+      <strong>Step 3:</strong> Add or subtract the <em>numerators only</em> — the denominator stays the same<br><br>
+      <em>Worked example:</em> −1/2 + 3/4<br>
+      LCD(2, 4) = 4 &nbsp;→&nbsp; −1/2 becomes −2/4<br>
+      −2/4 + 3/4 = <span class="highlight">1/4</span>
+    </div>
+    <p style="margin-top:12px;"><span class="chip">Decimals:</span> Line up the decimal points, then add/subtract. Apply integer sign rules to the result.</p>
+    <div class="example-block" style="margin-top:8px;">
+      <em>Worked example:</em> −3.6 + 1.25<br>
+      Align: −3.60 and +1.25 → different signs → subtract: 3.60 − 1.25 = 2.35<br>
+      Larger absolute value is 3.60 (negative) → answer: <span class="highlight-pink">−2.35</span>
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 118" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8"   y="8" width="244" height="102" rx="10" fill="rgba(0,201,177,0.08)"  stroke="var(--teal)" stroke-width="1.5"/>
+        <text class="nl-label" x="130" y="27" fill="var(--teal)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">FRACTIONS — use LCD</text>
+        <text class="nl-label" x="130" y="46" fill="#ccd6f6" font-size="13" text-anchor="middle" style="transition-delay:0.2s">−1/2 + 3/4</text>
+        <text class="nl-label" x="130" y="63" fill="#aaa"    font-size="11" text-anchor="middle" style="transition-delay:0.3s">LCD = 4 → −2/4 + 3/4</text>
+        <line x1="72" y1="72" x2="188" y2="72" stroke="var(--teal)" stroke-width="1"/>
+        <text class="nl-label" x="130" y="88" fill="var(--yellow)" font-size="14" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= 1/4</text>
+        <text class="nl-label" x="130" y="104" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">add numerators only; keep denominator</text>
+        <rect x="268" y="8" width="244" height="102" rx="10" fill="rgba(255,77,141,0.08)" stroke="var(--pink)" stroke-width="1.5"/>
+        <text class="nl-label" x="390" y="27" fill="var(--pink)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">DECIMALS — align points</text>
+        <text class="nl-label" x="390" y="46" fill="#ccd6f6" font-size="13" text-anchor="middle" style="transition-delay:0.2s">−3.60</text>
+        <text class="nl-label" x="390" y="63" fill="#ccd6f6" font-size="13" text-anchor="middle" style="transition-delay:0.25s">+ 1.25</text>
+        <line x1="348" y1="72" x2="432" y2="72" stroke="var(--pink)" stroke-width="1"/>
+        <text class="nl-label" x="390" y="88" fill="var(--yellow)" font-size="14" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= −2.35</text>
+        <text class="nl-label" x="390" y="104" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">|−3.60| &gt; |1.25| → keep negative sign</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l7" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l7-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q31">
+    <div class="q-num">1</div>
+    <div class="q-text">What is 1/3 + 1/6? (Hint: find the LCD first)</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q31',false)">A) 2/9</button>
+      <button class="choice-btn" onclick="checkMC(this,'q31',false)">B) 2/6</button>
+      <button class="choice-btn" onclick="checkMC(this,'q31',true)">C) 1/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q31',false)">D) 1/3</button>
+    </div>
+    <div class="feedback" id="fb-q31"></div>
+  </div>
+
+  <div class="q-card" id="q32">
+    <div class="q-num">2</div>
+    <div class="q-text">What is −3/4 + 1/2?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q32',true)">A) −1/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q32',false)">B) −2/6</button>
+      <button class="choice-btn" onclick="checkMC(this,'q32',false)">C) 1/4</button>
+      <button class="choice-btn" onclick="checkMC(this,'q32',false)">D) −5/4</button>
+    </div>
+    <div class="feedback" id="fb-q32"></div>
+  </div>
+
+  <div class="q-card" id="q33">
+    <div class="q-num">3</div>
+    <div class="q-text">Jake has 5.3 kg of flour. He uses 2.5 kg for bread, then later finds an extra 0.5 kg he forgot about. How many kg does he have now?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q33" type="number" placeholder="Your answer" step="0.1">
+      <button class="check-btn" onclick="checkTyped('q33','3.3',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q33"></div>
+  </div>
+
+  <div class="q-card" id="q34">
+    <div class="q-num">4</div>
+    <div class="q-text">What is −2.75 + 1.5?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q34',true)">A) −1.25</button>
+      <button class="choice-btn" onclick="checkMC(this,'q34',false)">B) +1.25</button>
+      <button class="choice-btn" onclick="checkMC(this,'q34',false)">C) −4.25</button>
+      <button class="choice-btn" onclick="checkMC(this,'q34',false)">D) +4.25</button>
+    </div>
+    <div class="feedback" id="fb-q34"></div>
+  </div>
+
+  <div class="q-card" id="q35">
+    <div class="q-num">5</div>
+    <div class="q-text">What is 2/5 − 3/10?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q35',true)">A) 1/10</button>
+      <button class="choice-btn" onclick="checkMC(this,'q35',false)">B) 1/5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q35',false)">C) −1/10</button>
+      <button class="choice-btn" onclick="checkMC(this,'q35',false)">D) 5/10</button>
+    </div>
+    <div class="feedback" id="fb-q35"></div>
+  </div>
+
+  <div class="celebration" id="cel-l7">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.7 Complete!</h3>
+    <p>You can add and subtract rational numbers! Now let's multiply and divide them.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l8')">Next: Lesson 1.8 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 8 — Multiplying & Dividing Fractions ══════════════════════════ -->
+<div class="tab-panel" id="panel-l8">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.8 · Multiplying &amp; Dividing Rational Numbers</h2>
+    <p><span class="chip">Multiply fractions:</span> numerator × numerator over denominator × denominator. Simplify after.</p>
+    <p style="margin-top:8px;"><span class="chip-pink">Divide fractions:</span> Keep the first fraction, <strong>Flip</strong> the second (its reciprocal), then <strong>Multiply</strong>. (Keep–Change–Flip)</p>
+    <p style="margin-top:8px;"><span class="chip-yellow">Signs:</span> Same signs → positive result. Different signs → negative result.</p>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 112" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8"   y="8" width="244" height="96" rx="10" fill="rgba(0,201,177,0.08)"  stroke="var(--teal)"   stroke-width="1.5"/>
+        <text class="nl-label" x="130" y="27" fill="var(--teal)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">MULTIPLY</text>
+        <text class="nl-label" x="130" y="46" fill="#ccd6f6" font-size="12" text-anchor="middle" style="transition-delay:0.2s">−(2/3) × (3/4)</text>
+        <text class="nl-label" x="130" y="63" fill="#aaa"    font-size="11" text-anchor="middle" style="transition-delay:0.3s">= (−2×3)/(3×4) = −6/12</text>
+        <line x1="72" y1="72" x2="188" y2="72" stroke="var(--teal)" stroke-width="1"/>
+        <text class="nl-label" x="130" y="86" fill="var(--yellow)" font-size="14" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= −1/2</text>
+        <text class="nl-label" x="130" y="100" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">diff. signs → negative</text>
+        <rect x="268" y="8" width="244" height="96" rx="10" fill="rgba(255,210,0,0.08)"   stroke="var(--yellow)" stroke-width="1.5"/>
+        <text class="nl-label" x="390" y="27" fill="var(--yellow)" font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">DIVIDE — flip &amp; multiply</text>
+        <text class="nl-label" x="390" y="46" fill="#ccd6f6" font-size="12" text-anchor="middle" style="transition-delay:0.2s">(−3/4) ÷ (1/2)</text>
+        <text class="nl-label" x="390" y="63" fill="#aaa"    font-size="11" text-anchor="middle" style="transition-delay:0.3s">= (−3/4) × (2/1) = −6/4</text>
+        <line x1="332" y1="72" x2="448" y2="72" stroke="var(--yellow)" stroke-width="1"/>
+        <text class="nl-label" x="390" y="86" fill="var(--yellow)" font-size="14" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= −3/2</text>
+        <text class="nl-label" x="390" y="100" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">diff. signs → negative</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l8" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l8-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q36">
+    <div class="q-num">1</div>
+    <div class="q-text">What is (2/3) × (3/5)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q36',false)">A) 5/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q36',true)">B) 2/5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q36',false)">C) 6/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q36',false)">D) 1/5</button>
+    </div>
+    <div class="feedback" id="fb-q36"></div>
+  </div>
+
+  <div class="q-card" id="q37">
+    <div class="q-num">2</div>
+    <div class="q-text">What is (−1/2) × (4/3)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q37',false)">A) +2/3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q37',true)">B) −2/3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q37',false)">C) −3/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q37',false)">D) +3/8</button>
+    </div>
+    <div class="feedback" id="fb-q37"></div>
+  </div>
+
+  <div class="q-card" id="q38">
+    <div class="q-num">3</div>
+    <div class="q-text">What is (3/4) ÷ (1/2)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q38',false)">A) 3/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q38',false)">B) 6/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q38',true)">C) 3/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q38',false)">D) 4/3</button>
+    </div>
+    <div class="feedback" id="fb-q38"></div>
+  </div>
+
+  <div class="q-card" id="q39">
+    <div class="q-num">4</div>
+    <div class="q-text">What is (−5/6) ÷ (−1/3)?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q39',false)">A) +5/18</button>
+      <button class="choice-btn" onclick="checkMC(this,'q39',true)">B) +5/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q39',false)">C) −5/2</button>
+      <button class="choice-btn" onclick="checkMC(this,'q39',false)">D) −5/18</button>
+    </div>
+    <div class="feedback" id="fb-q39"></div>
+  </div>
+
+  <div class="q-card" id="q40">
+    <div class="q-num">5</div>
+    <div class="q-text">A recipe uses 2/3 cup of sugar. You are making 3/4 of the recipe. How much sugar do you need?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q40',false)">A) 5/7 cup</button>
+      <button class="choice-btn" onclick="checkMC(this,'q40',true)">B) 1/2 cup</button>
+      <button class="choice-btn" onclick="checkMC(this,'q40',false)">C) 2/7 cup</button>
+      <button class="choice-btn" onclick="checkMC(this,'q40',false)">D) 1/4 cup</button>
+    </div>
+    <div class="feedback" id="fb-q40"></div>
+  </div>
+
+  <div class="celebration" id="cel-l8">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.8 Complete!</h3>
+    <p>Fraction multiplication and division mastered! Next: converting between fractions and decimals.</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l9')">Next: Lesson 1.9 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 9 — Fractions & Decimals ══════════════════════════ -->
+<div class="tab-panel" id="panel-l9">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.9 · Fractions &amp; Decimals</h2>
+    <p><span class="chip">Fraction → Decimal:</span> Divide the numerator by the denominator.</p>
+    <div class="example-block" style="margin-top:10px;">
+      <strong>Terminating:</strong> 3/4 → 3 ÷ 4 = <span class="highlight">0.75</span> &nbsp;(remainder reaches 0 — it stops)<br>
+      <strong>Repeating:</strong> 1/3 → 1 ÷ 3 = <span class="highlight-pink">0.333…</span> &nbsp;(pattern repeats forever, written 0.3̄)
+    </div>
+    <p style="margin-top:10px;"><span class="chip-yellow">Decimal → Fraction:</span> Write digits over a power of 10, then simplify.<br>
+    <span style="color:#aaa;font-size:0.9em;">e.g. 0.6 = 6/10 = 3/5 &nbsp;·&nbsp; 0.25 = 25/100 = 1/4 &nbsp;·&nbsp; 0.125 = 125/1000 = 1/8</span></p>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 112" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8"   y="8" width="244" height="96" rx="10" fill="rgba(0,201,177,0.08)"  stroke="var(--teal)"   stroke-width="1.5"/>
+        <text class="nl-label" x="130" y="27" fill="var(--teal)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">TERMINATING DECIMAL</text>
+        <text class="nl-label" x="130" y="46" fill="#ccd6f6" font-size="14" text-anchor="middle" style="transition-delay:0.2s">3 ÷ 4</text>
+        <text class="nl-label" x="130" y="63" fill="#aaa"    font-size="11" text-anchor="middle" style="transition-delay:0.3s">4 goes into 3.00 exactly …</text>
+        <line x1="72" y1="72" x2="188" y2="72" stroke="var(--teal)" stroke-width="1"/>
+        <text class="nl-label" x="130" y="86" fill="var(--teal)"   font-size="14" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= 0.75 ✓ STOPS</text>
+        <text class="nl-label" x="130" y="100" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">remainder = 0</text>
+        <rect x="268" y="8" width="244" height="96" rx="10" fill="rgba(255,77,141,0.08)"  stroke="var(--pink)"   stroke-width="1.5"/>
+        <text class="nl-label" x="390" y="27" fill="var(--pink)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">REPEATING DECIMAL</text>
+        <text class="nl-label" x="390" y="46" fill="#ccd6f6" font-size="14" text-anchor="middle" style="transition-delay:0.2s">1 ÷ 3</text>
+        <text class="nl-label" x="390" y="63" fill="#aaa"    font-size="11" text-anchor="middle" style="transition-delay:0.3s">3 goes into 1.000 …</text>
+        <line x1="332" y1="72" x2="448" y2="72" stroke="var(--pink)" stroke-width="1"/>
+        <text class="nl-label" x="390" y="86" fill="var(--pink)"   font-size="13" font-weight="bold" text-anchor="middle" style="transition-delay:0.4s">= 0.333… (0.3̄)</text>
+        <text class="nl-label" x="390" y="100" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">remainder never = 0</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l9" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l9-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q41">
+    <div class="q-num">1</div>
+    <div class="q-text">Convert 3/8 to a decimal.</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q41',false)">A) 0.38</button>
+      <button class="choice-btn" onclick="checkMC(this,'q41',true)">B) 0.375</button>
+      <button class="choice-btn" onclick="checkMC(this,'q41',false)">C) 3.8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q41',false)">D) 0.25</button>
+    </div>
+    <div class="feedback" id="fb-q41"></div>
+  </div>
+
+  <div class="q-card" id="q42">
+    <div class="q-num">2</div>
+    <div class="q-text">Which fraction equals the repeating decimal 0.666…?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q42',false)">A) 6/10</button>
+      <button class="choice-btn" onclick="checkMC(this,'q42',true)">B) 2/3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q42',false)">C) 1/6</button>
+      <button class="choice-btn" onclick="checkMC(this,'q42',false)">D) 6/7</button>
+    </div>
+    <div class="feedback" id="fb-q42"></div>
+  </div>
+
+  <div class="q-card" id="q43">
+    <div class="q-num">3</div>
+    <div class="q-text">Convert 0.6 to a fraction in <em>simplest form</em>.</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q43',false)">A) 6/100</button>
+      <button class="choice-btn" onclick="checkMC(this,'q43',true)">B) 3/5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q43',false)">C) 1/6</button>
+      <button class="choice-btn" onclick="checkMC(this,'q43',false)">D) 2/3</button>
+    </div>
+    <div class="feedback" id="fb-q43"></div>
+  </div>
+
+  <div class="q-card" id="q44">
+    <div class="q-num">4</div>
+    <div class="q-text">Which fraction produces a <em>terminating</em> decimal?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q44',false)">A) 1/3</button>
+      <button class="choice-btn" onclick="checkMC(this,'q44',false)">B) 2/9</button>
+      <button class="choice-btn" onclick="checkMC(this,'q44',false)">C) 5/6</button>
+      <button class="choice-btn" onclick="checkMC(this,'q44',true)">D) 7/8</button>
+    </div>
+    <div class="feedback" id="fb-q44"></div>
+  </div>
+
+  <div class="q-card" id="q45">
+    <div class="q-num">5</div>
+    <div class="q-text">Convert 0.125 to a fraction in <em>simplest form</em>.</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q45',false)">A) 125/10</button>
+      <button class="choice-btn" onclick="checkMC(this,'q45',false)">B) 12/5</button>
+      <button class="choice-btn" onclick="checkMC(this,'q45',true)">C) 1/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q45',false)">D) 1/4</button>
+    </div>
+    <div class="feedback" id="fb-q45"></div>
+  </div>
+
+  <div class="celebration" id="cel-l9">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.9 Complete!</h3>
+    <p>You can convert between fractions and decimals fluently. Two lessons to go!</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l10')">Next: Lesson 1.10 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 10 — Math Properties ══════════════════════════ -->
+<div class="tab-panel" id="panel-l10">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.10 · Mathematical Properties</h2>
+    <p>These properties let you <em>rearrange and regroup</em> numbers — they work for all rational numbers and make complex calculations much easier.</p>
+    <div class="example-block" style="margin-top:10px;">
+      <span class="chip">Commutative</span> &nbsp;a + b = b + a &nbsp;<span style="color:#aaa;font-size:0.9em;">(swap the order)</span><br>
+      <em>e.g.</em> −1 + 11 = 11 + (−1) = 10<br><br>
+      <span class="chip-pink">Associative</span> &nbsp;(a + b) + c = a + (b + c) &nbsp;<span style="color:#aaa;font-size:0.9em;">(change the grouping)</span><br>
+      <em>e.g.</em> (2 + 3) + 4 = 2 + (3 + 4) = 9<br><br>
+      <span class="chip-yellow">Strategy tip:</span> Look for additive inverse pairs that cancel to zero, or group numbers that make tidy sums.
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 82" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8"   y="8" width="160" height="66" rx="8" fill="rgba(0,201,177,0.10)"  stroke="var(--teal)"   stroke-width="1.5"/>
+        <rect x="182" y="8" width="158" height="66" rx="8" fill="rgba(255,77,141,0.10)" stroke="var(--pink)"   stroke-width="1.5"/>
+        <rect x="354" y="8" width="158" height="66" rx="8" fill="rgba(255,210,0,0.10)"  stroke="var(--yellow)" stroke-width="1.5"/>
+        <text class="nl-label" x="88"  y="27" fill="var(--teal)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">COMMUTATIVE</text>
+        <text class="nl-label" x="261" y="27" fill="var(--pink)"   font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.15s">ASSOCIATIVE</text>
+        <text class="nl-label" x="433" y="27" fill="var(--yellow)" font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.2s">IDENTITY</text>
+        <text class="nl-label" x="88"  y="46" fill="#ccd6f6" font-size="11" text-anchor="middle" style="transition-delay:0.25s">a + b = b + a</text>
+        <text class="nl-label" x="261" y="46" fill="#ccd6f6" font-size="10" text-anchor="middle" style="transition-delay:0.3s">(a+b)+c = a+(b+c)</text>
+        <text class="nl-label" x="433" y="46" fill="#ccd6f6" font-size="11" text-anchor="middle" style="transition-delay:0.35s">a + 0 = a</text>
+        <text class="nl-label" x="88"  y="66" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.4s">swap order</text>
+        <text class="nl-label" x="261" y="66" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.45s">regroup freely</text>
+        <text class="nl-label" x="433" y="66" fill="#888" font-size="9" text-anchor="middle" style="transition-delay:0.5s">zero leaves unchanged</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l10" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l10-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q46">
+    <div class="q-num">1</div>
+    <div class="q-text">Which property is illustrated? &nbsp; (a + b) + c = a + (b + c)</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q46',false)">A) Commutative Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q46',false)">B) Identity Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q46',true)">C) Associative Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q46',false)">D) Distributive Property</button>
+    </div>
+    <div class="feedback" id="fb-q46"></div>
+  </div>
+
+  <div class="q-card" id="q47">
+    <div class="q-num">2</div>
+    <div class="q-text">Which property is illustrated? &nbsp; −1 + 11 = 11 + (−1)</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q47',false)">A) Associative Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q47',false)">B) Identity Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q47',true)">C) Commutative Property</button>
+      <button class="choice-btn" onclick="checkMC(this,'q47',false)">D) Inverse Property</button>
+    </div>
+    <div class="feedback" id="fb-q47"></div>
+  </div>
+
+  <div class="q-card" id="q48">
+    <div class="q-num">3</div>
+    <div class="q-text">Use properties to simplify: 4 + 18 + 7 + (−9) + 3 + (−9) = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q48" type="number" placeholder="Your answer">
+      <button class="check-btn" onclick="checkTyped('q48','14',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q48"></div>
+  </div>
+
+  <div class="q-card" id="q49">
+    <div class="q-num">4</div>
+    <div class="q-text">Use properties to simplify: −3.25 + 4.2 + 3.2 + (−2.1) + 0.05 = ?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q49" type="number" placeholder="Your answer" step="0.01">
+      <button class="check-btn" onclick="checkTyped('q49','2.1',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q49"></div>
+  </div>
+
+  <div class="q-card" id="q50">
+    <div class="q-num">5</div>
+    <div class="q-text">What is −1 + (−5) + (−7) + 13?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q50',false)">A) 26</button>
+      <button class="choice-btn" onclick="checkMC(this,'q50',false)">B) −26</button>
+      <button class="choice-btn" onclick="checkMC(this,'q50',true)">C) 0</button>
+      <button class="choice-btn" onclick="checkMC(this,'q50',false)">D) −13</button>
+    </div>
+    <div class="feedback" id="fb-q50"></div>
+  </div>
+
+  <div class="celebration" id="cel-l10">
+    <div style="font-size:2.2rem;">🎉</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Lesson 1.10 Complete!</h3>
+    <p>Math properties mastered! One final lesson — putting it all together in real-world problems!</p>
+    <button class="check-btn" style="margin-top:12px;" onclick="switchTab('l11')">Next: Lesson 1.11 →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ LESSON 11 — Real World Problems ══════════════════════════ -->
+<div class="tab-panel" id="panel-l11">
+  <div class="concept-box">
+    <div class="concept-label">Core Concept</div>
+    <h2 style="color:var(--yellow);margin:8px 0 14px;">Lesson 1.11 · Real World Problems</h2>
+    <p>The key skill is <span class="chip">translating words into math expressions</span> with the correct signs.</p>
+    <div class="example-block" style="margin-top:10px;">
+      <span class="highlight-yellow">Common sign translations:</span><br>
+      <strong>Debt / spent / withdrew / dropped / lost</strong> → <span class="highlight-pink">negative (−)</span><br>
+      <strong>Earned / deposited / gained / rose / found</strong> → <span class="highlight">positive (+)</span><br><br>
+      <span class="highlight-yellow">Strategy:</span><br>
+      <strong>1.</strong> Identify what each number represents<br>
+      <strong>2.</strong> Assign the correct sign<br>
+      <strong>3.</strong> Write the expression &amp; calculate<br>
+      <strong>4.</strong> Ask: does the answer make sense in context?
+    </div>
+    <div class="nl-wrap">
+      <svg width="100%" viewBox="0 0 520 72" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="504" height="56" rx="10" fill="rgba(155,89,245,0.10)" stroke="var(--purple)" stroke-width="1.5"/>
+        <text class="nl-label" x="260" y="26" fill="var(--purple)" font-size="11" font-weight="bold" text-anchor="middle" style="transition-delay:0.1s">EXAMPLE: Lynn had $64. After checks, balance = −$13. Total checks written?</text>
+        <text class="nl-label" x="260" y="44" fill="#ccd6f6" font-size="12" text-anchor="middle" style="transition-delay:0.2s">$64 + (−checks) = −$13 &nbsp;→&nbsp; checks = 64 + 13 = $77</text>
+        <text class="nl-label" x="260" y="60" fill="#aaa"    font-size="10" text-anchor="middle" style="transition-delay:0.3s">Starting balance − total withdrawn = ending balance</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div id="prog-l11" class="progress-bar-inner" style="width:0%"></div>
+    <span id="prog-l11-txt">0 / 5</span>
+  </div>
+  <div class="section-title">Practice Questions</div>
+
+  <div class="q-card" id="q51">
+    <div class="q-num">1</div>
+    <div class="q-text">Lynn had $64 in her account. After writing checks, her balance dropped to −$13. What was the <em>total amount</em> of the checks she wrote?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q51',false)">A) $51</button>
+      <button class="choice-btn" onclick="checkMC(this,'q51',true)">B) $77</button>
+      <button class="choice-btn" onclick="checkMC(this,'q51',false)">C) $64</button>
+      <button class="choice-btn" onclick="checkMC(this,'q51',false)">D) $13</button>
+    </div>
+    <div class="feedback" id="fb-q51"></div>
+  </div>
+
+  <div class="q-card" id="q52">
+    <div class="q-num">2</div>
+    <div class="q-text">Aaron's peach harvest over 9 days (in lbs): 4.1, 19.8, −21.6, 17.7, −18.1, 22.4, −12.9, 15.3, −23.9. (Negative = gave away.) What is his net total?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q52" type="number" placeholder="Your answer" step="0.1">
+      <button class="check-btn" onclick="checkTyped('q52','2.8',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q52"></div>
+  </div>
+
+  <div class="q-card" id="q53">
+    <div class="q-num">3</div>
+    <div class="q-text">A stock changed: Day 1: −$8, Day 2: +$14, Day 3: +$21, Day 4: −$11. Which day had the <em>biggest change</em> by absolute value?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q53',false)">A) Day 1 (−$8)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q53',false)">B) Day 2 (+$14)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q53',true)">C) Day 3 (+$21)</button>
+      <button class="choice-btn" onclick="checkMC(this,'q53',false)">D) Day 4 (−$11)</button>
+    </div>
+    <div class="feedback" id="fb-q53"></div>
+  </div>
+
+  <div class="q-card" id="q54">
+    <div class="q-num">4</div>
+    <div class="q-text">McCoy has a loan balance of $3,467. He makes two payments of $291 and $79, then receives a credit of $23. What is his new balance?</div>
+    <div class="ans-row">
+      <input class="ans-input" id="ans-q54" type="number" placeholder="Your answer">
+      <button class="check-btn" onclick="checkTyped('q54','3120',false)">Check</button>
+    </div>
+    <div class="feedback" id="fb-q54"></div>
+  </div>
+
+  <div class="q-card" id="q55">
+    <div class="q-num">5</div>
+    <div class="q-text">Raquel's garden has 8 equal sections. She plants flowers in 3 sections and vegetables in 4 sections. What fraction of the garden is <em>unplanted</em>?</div>
+    <div class="choices">
+      <button class="choice-btn" onclick="checkMC(this,'q55',false)">A) 7/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q55',false)">B) 3/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q55',false)">C) 4/8</button>
+      <button class="choice-btn" onclick="checkMC(this,'q55',true)">D) 1/8</button>
+    </div>
+    <div class="feedback" id="fb-q55"></div>
+  </div>
+
+  <div class="celebration" id="cel-l11">
+    <div style="font-size:2.5rem;">🏆</div>
+    <h3 style="color:var(--yellow);margin:8px 0;">Chapter 1 Complete!</h3>
+    <p>Outstanding work! You have mastered all 11 lessons of Chapter 1 — Rational Numbers. You are ready for Chapter 2!</p>
+    <div style="margin-top:14px;font-size:0.9em;color:#aaa;">Check your total score above ↑</div>
+  </div>
+</div>
+
+
+</div><!-- /panels-wrapper -->
+</div><!-- /content -->
+
+<div class="reset-wrap">
+  <button class="reset-btn" onclick="resetProgress()">Reset Progress</button>
+</div>
+
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ── AVATAR DEFINITIONS ──
+const AVATARS = [
+  { id:'Luna'    }, { id:'Zara'    }, { id:'Nova'    }, { id:'Mila'   }, { id:'Ivy'    },
+  { id:'Stella'  }, { id:'Cleo'   }, { id:'Ruby'    }, { id:'Jade'   }, { id:'Aria'   },
+  { id:'Felix'   }, { id:'Dash'   }, { id:'Axel'    }, { id:'Rocco'  }, { id:'Leo'    },
+  { id:'Finn'    }, { id:'Jasper' }, { id:'Cruz'    }, { id:'Koda'   }, { id:'Remy'   },
+];
+
+function avatarSVG(id, size=48) {
+  const seed = id || 'Felix';
+  return `<img src="https://api.dicebear.com/9.x/croodles/svg?seed=${seed}" width="${size}" height="${size}" style="display:block;border-radius:8px" loading="lazy">`;
+}
+
+// ── FEEDBACK ──
+const FEEDBACK = {
+  // Lesson 1.1 — Integers & Absolute Value
+  q1:  { correct:'Correct! A is at −4 → |A|=4. B is at +4 → |B|=4. Equal distance from zero = equal absolute values!', wrong:'Not quite. |−4|=4 and |+4|=4. They are the same distance from zero.' },
+  q2:  { correct:'Right! Since |X|>|Y| and both are negative, X is farther left (farther from zero). Y has a smaller absolute value → closer to 0.', wrong:'Flip it! A larger absolute value = farther from zero. |X|>|Y| means X is farther away, so Y is closer.' },
+  q3:  { correct:'|−45|=45 and |+30|=30. Then 45 − 30 = 15. ✓', wrong:'Remember: |−45|=45 (always positive!) and |+30|=30. Subtract: 45 − 30 = 15.' },
+  q4:  { correct:'TRUE! Opposites are mirror images across zero — same distance, just different sides. |−7|=7 and |+7|=7.', wrong:'Actually TRUE. Opposites sit the same distance from zero on either side. |−7|=|+7|=7 — always equal.' },
+  q5:  { correct:'|−4.1|=4.1 is the biggest. Strip the signs: 3.5, 2.9, 4.1, 3.8. Largest is 4.1.', wrong:'Strip the signs first: 3.5, 2.9, 4.1, 3.8. The largest is 4.1 = |−4.1|.' },
+  // Lesson 1.2 — Comparing & Ordering
+  q6:  { correct:'Correct! −3/4 = −0.75 and −1/2 = −0.5. Since −0.75 < −0.5 (more negative), −3/4 < −1/2. ✓', wrong:'Convert to decimals: −3/4=−0.75 and −1/2=−0.5. On the number line −0.75 is further left → smaller.' },
+  q7:  { correct:'Convert to decimals: −1, −0.667, 0.3, 0.5. Left to right on the number line gives least to greatest. ✓', wrong:'Convert each: −1, −2/3≈−0.667, 0.3, 1/2=0.5. Order from least: −1, −0.667, 0.3, 0.5.' },
+  q8:  { correct:'Convert all: −0.8, −0.875, −0.8, −0.75. The greatest (closest to zero) is −0.75! ✓', wrong:'Convert: −0.8, −7/8=−0.875, −4/5=−0.8, −0.75. Greatest = least negative = −0.75.' },
+  q9:  { correct:'Correct! For negative numbers, the relationship flips: a larger fraction magnitude means a more negative (smaller) number. −5/6 < −3/4. ✓', wrong:'Emma is wrong. For negatives, larger fraction → more negative → smaller. −5/6 ≈ −0.833 < −3/4=−0.75.' },
+  q10: { correct:'3/4=0.75, 1/3≈0.333, 0, −1/4=−0.25 — decreasing order ✓', wrong:'Greatest to least: biggest first. 3/4 > 1/3 > 0 > −1/4, so B is correct.' },
+  // Lesson 1.3 — Additive Inverse
+  q11: { correct:'Yes! −6.5 + 6.5 = 0. The additive inverse of any number flips its sign.', wrong:'Ask: what + (−6.5) = 0? Answer: +6.5. Flip the sign.' },
+  q12: { correct:'+250 ft up and −250 ft down: 250 + (−250) = 0. Classic additive inverse — net change is zero!', wrong:'+250 + (−250) = 0. Going up then back the same distance cancels out.' },
+  q13: { correct:'The additive inverse of +37.50 is −37.50. She withdrew exactly $37.50 to bring the balance to zero.', wrong:'The additive inverse of 37.5 is −37.5. Flip the sign: she withdrew $37.50.' },
+  q14: { correct:'Leo earned $27 (positive) and spent $27 (negative). Since 27 + (−27) = 0, YES — they are additive inverses!', wrong:'Earned +$27 and spent −$27: 27 + (−27) = 0, so they ARE additive inverses. Answer: yes.' },
+  q15: { correct:'Only 0 is its own additive inverse, because 0 + 0 = 0. For any other n, the inverse is −n ≠ n.', wrong:'YES — only 0 is its own additive inverse, because 0 + 0 = 0. No other number satisfies a + a = 0.' },
+  // Lesson 1.4 — Adding Integers
+  q16: { correct:'Negative + negative always gives a more negative result — you move further left on the number line.', wrong:'Think of the number line: neg+neg means you go left twice → always more negative.' },
+  q17: { correct:'−2 + (−3) = −5. Both negative → add absolute values (2+3=5), keep the negative sign.', wrong:'Both negative: add the sizes (2+3=5) and keep the − sign → −5.' },
+  q18: { correct:'−3 + 2 = −1. The negative has larger absolute value (3>2), so the answer is negative: −(3−2) = −1.', wrong:'Different signs: |−3|=3 > |2|=2, so the negative wins. Result is −(3−2) = −1.' },
+  q19: { correct:'Round: 24.24 ≈ 24 and −27.8 ≈ −28. 24 + (−28) = −4. Actual = −3.56 ≈ −4 ✓', wrong:'Round to nearest whole: 24 + (−28) = −4. The actual answer is −3.56, which is close to −4 — reasonable!' },
+  q20: { correct:'−2.5 + (−0.5) = −3. Add the sizes (2.5+0.5=3) and keep the negative sign.', wrong:'Both negative: 2.5 + 0.5 = 3, keep the − → −3.' },
+  // Lesson 1.5 — Subtracting Integers
+  q21: { correct:'a − b = a + (−b). So 4 − 7 = 4 + (−7). Subtracting a positive is the same as adding its negative.', wrong:'Subtracting is adding the opposite: 4 − 7 becomes 4 + (−7).' },
+  q22: { correct:'4 − (−7) = 4 + 7 = 11. Subtracting a negative flips to adding: a − (−b) = a + b.', wrong:'Subtract a negative = add its positive: 4 − (−7) = 4 + 7 = 11.' },
+  q23: { correct:'10 − (−10) = 10 + 10 = 20. Jamal forgot to flip the sign of the second number!', wrong:'Correct: 10 − (−10) = 10 + 10 = 20 (subtracting negative = adding positive). NOT zero.' },
+  q24: { correct:'4 − (−7.5) = 4 + 7.5 = 11.5. Subtracting a negative becomes addition.', wrong:'Flip the sign: 4 − (−7.5) = 4 + 7.5 = 11.5.' },
+  q25: { correct:'−17.56 − 13.43: both negatives add up → −(17.56 + 13.43) = −30.99.', wrong:'Subtracting a positive from a negative: −17.56 − 13.43 = −(17.56+13.43) = −30.99.' },
+  // Lesson 1.6 — Multiplying & Dividing Integers
+  q26: { correct:'(−4)×(−5): same signs → positive result. 4×5=20 → +20. ✓', wrong:'Same signs (both negative) → positive result. 4×5=20 → +20.' },
+  q27: { correct:'(+6)×(−3): different signs → negative. 6×3=18 → −18. ✓', wrong:'Different signs (one positive, one negative) → negative result. 6×3=18 → −18.' },
+  q28: { correct:'−36 ÷ (−9): same signs (both negative) → positive. 36÷9=4 → +4. ✓', wrong:'Same signs → positive result. 36÷9=4, and (−)÷(−)=(+), so answer is +4.' },
+  q29: { correct:'Drop of 3°F per hour × 5 hours = (−3)×5 = −15°F total change. ✓', wrong:'(−3)×5 = −15. A drop of 3 per hour for 5 hours means a total decrease of 15°F.' },
+  q30: { correct:'(−3)×(−7): same signs → positive (+21). The others are different signs → negative. ✓', wrong:'Same signs give positive. Only (−3)×(−7) has same signs (both negative) → +21.' },
+  // Lesson 1.7 — Adding & Subtracting Fractions/Decimals
+  q31: { correct:'LCD(3,6)=6. 1/3=2/6. Then 2/6+1/6=3/6=1/2. ✓', wrong:'LCD of 3 and 6 is 6. Convert 1/3 to 2/6, then 2/6 + 1/6 = 3/6 = 1/2.' },
+  q32: { correct:'LCD(4,2)=4. 1/2=2/4. Then −3/4+2/4=−1/4. ✓', wrong:'LCD=4. Convert 1/2 to 2/4. Then −3/4 + 2/4 = −1/4.' },
+  q33: { correct:'5.3 − 2.5 + 0.5 = 2.8 + 0.5 = 3.3 kg. ✓', wrong:'5.3 − 2.5 = 2.8, then 2.8 + 0.5 = 3.3 kg.' },
+  q34: { correct:'−2.75 + 1.5: different signs. |−2.75|>|1.5|, so result is negative. 2.75−1.5=1.25 → −1.25. ✓', wrong:'Different signs: subtract 1.5 from 2.75 = 1.25. The larger absolute value is negative → −1.25.' },
+  q35: { correct:'LCD(5,10)=10. 2/5=4/10. Then 4/10−3/10=1/10. ✓', wrong:'LCD=10. Convert 2/5 to 4/10. Then 4/10 − 3/10 = 1/10.' },
+  // Lesson 1.8 — Multiplying & Dividing Fractions
+  q36: { correct:'(2/3)×(3/5) = (2×3)/(3×5) = 6/15 = 2/5. ✓', wrong:'Multiply top×top and bottom×bottom: (2×3)/(3×5) = 6/15 = 2/5.' },
+  q37: { correct:'(−1/2)×(4/3) = (1×4)/(2×3) = 4/6 = 2/3. Different signs → negative → −2/3. ✓', wrong:'1×4=4, 2×3=6 → 4/6=2/3. Different signs → −2/3.' },
+  q38: { correct:'(3/4)÷(1/2) = (3/4)×(2/1) = 6/4 = 3/2. (Keep−Change−Flip) ✓', wrong:'Flip and multiply: (3/4)×(2/1) = 6/4 = 3/2.' },
+  q39: { correct:'(−5/6)÷(−1/3) = (−5/6)×(−3/1) = 15/6 = 5/2. Same signs → positive → +5/2. ✓', wrong:'Flip: (−5/6)×(−3/1) = 15/6 = 5/2. Same signs → +5/2.' },
+  q40: { correct:'(2/3)×(3/4) = 6/12 = 1/2 cup. ✓', wrong:'Multiply 2/3 × 3/4 = 6/12 = 1/2 cup of sugar.' },
+  // Lesson 1.9 — Fractions & Decimals
+  q41: { correct:'3 ÷ 8 = 0.375. (3.000 ÷ 8 = 0.375 — it terminates!) ✓', wrong:'Divide: 3 ÷ 8. 8 goes into 3.000 → 0.375. Not 0.38 (that would be rounding, not exact).' },
+  q42: { correct:'2/3 = 0.666… — the digit 6 repeats forever. (2÷3 = 0.666…) ✓', wrong:'Divide 2 by 3: 0.666… The fraction that equals 0.666… is 2/3.' },
+  q43: { correct:'0.6 = 6/10. Simplify by dividing by 2: 6/10 = 3/5. ✓', wrong:'0.6 = 6/10. Simplify: GCF(6,10)=2 → 6/10 = 3/5.' },
+  q44: { correct:'7/8 terminates: 7÷8=0.875. The others (1/3, 2/9, 5/6) have denominators with factors other than 2 or 5 → they repeat. ✓', wrong:'A fraction terminates if its denominator (in lowest terms) only has factors of 2 and 5. 8=2³ → terminates! 7/8=0.875.' },
+  q45: { correct:'0.125 = 125/1000. Simplify: 125/1000 ÷ 125 = 1/8. ✓', wrong:'0.125 = 125/1000. Divide both by GCF=125: 1/8.' },
+  // Lesson 1.10 — Math Properties
+  q46: { correct:'Regrouping brackets without changing order = Associative Property. (a+b)+c = a+(b+c). ✓', wrong:'Regrouping (changing parentheses) = Associative Property. Commutative swaps order; Identity adds 0.' },
+  q47: { correct:'Swapping the order of addends = Commutative Property. a+b = b+a. ✓', wrong:'Swapping order = Commutative Property. −1+11 = 11+(−1) — same sum, different order.' },
+  q48: { correct:'Group positives: 4+18+7+3=32. Negatives: −9+(−9)=−18. Total: 32+(−18)=14. ✓', wrong:'Try grouping: (4+18+7+3) + (−9−9) = 32 + (−18) = 14.' },
+  q49: { correct:'Positives: 4.2+3.2+0.05=7.45. Negatives: −3.25+(−2.1)=−5.35. Total: 7.45−5.35=2.1. ✓', wrong:'Group positives (4.2+3.2+0.05=7.45) and negatives (−3.25−2.1=−5.35): 7.45−5.35=2.1.' },
+  q50: { correct:'−1+(−5)+(−7)+13 = (−13)+13 = 0. The three negatives sum to −13, which cancels with +13! ✓', wrong:'Add negatives: −1+(−5)+(−7)=−13. Then −13+13=0. They are additive inverses!' },
+  // Lesson 1.11 — Real World Problems
+  q51: { correct:'Start $64, end −$13. Difference = 64 − (−13) = 64 + 13 = $77 total checks written. ✓', wrong:'64 + 13 = 77. Going from +64 to −13 means $77 was subtracted (checks written).' },
+  q52: { correct:'4.1+19.8−21.6+17.7−18.1+22.4−12.9+15.3−23.9 = 2.8 lbs remaining. ✓', wrong:'Add picks, subtract giveaways: 4.1+19.8−21.6+17.7−18.1+22.4−12.9+15.3−23.9 = 2.8 lbs.' },
+  q53: { correct:'Day 3: |+$21|=21 is the largest absolute value. Day 1=8, Day 2=14, Day 4=11. ✓', wrong:'Compare absolute values: |−8|=8, |+14|=14, |+21|=21, |−11|=11. Largest = Day 3.' },
+  q54: { correct:'3467 − 291 − 79 + 23 = 3467 − 370 + 23 = 3097 + 23 = 3120. ✓', wrong:'3467 − 291 = 3176; 3176 − 79 = 3097; 3097 + 23 = 3120.' },
+  q55: { correct:'Flowers: 3, vegetables: 4, total planted: 7 out of 8 sections. Unplanted = 8−7 = 1 → 1/8. ✓', wrong:'Total planted = 3+4 = 7 out of 8 sections. Unplanted = 8−7 = 1 section → 1/8.' },
+};
+
+const Q_META = {
+  q1:{type:'mc',correct:'B) |A| = |B|'},q2:{type:'mc',correct:'B) Y is closer'},
+  q3:{type:'typed',correct:'15',isText:false},q4:{type:'mc',correct:'A) True'},q5:{type:'mc',correct:'C) |−4.1|'},
+  q6:{type:'mc',correct:'A) −3/4 < −1/2'},q7:{type:'mc',correct:'A) −1, −2/3, 0.3, 1/2'},
+  q8:{type:'mc',correct:'D) −0.75'},q9:{type:'mc',correct:'B) No — larger fraction means more negative'},q10:{type:'mc',correct:'B) 3/4, 1/3, 0, −1/4'},
+  q11:{type:'mc',correct:'B) +6.5'},q12:{type:'mc',correct:'C) 0 ft'},
+  q13:{type:'typed',correct:'37.5',isText:false},q14:{type:'typed',correct:'yes',isText:true},q15:{type:'mc',correct:'B) Yes — only 0'},
+  q16:{type:'mc',correct:'B) Negative'},q17:{type:'mc',correct:'A) −5'},
+  q18:{type:'mc',correct:'D) −1'},q19:{type:'mc',correct:'A) Yes — −4 is close'},q20:{type:'typed',correct:'-3',isText:false},
+  q21:{type:'mc',correct:'A) 4 + (−7)'},q22:{type:'mc',correct:'C) 11'},
+  q23:{type:'mc',correct:'B) 20'},q24:{type:'typed',correct:'11.5',isText:false},q25:{type:'typed',correct:'-30.99',isText:false},
+  q26:{type:'mc',correct:'B) +20'},q27:{type:'mc',correct:'B) −18'},
+  q28:{type:'mc',correct:'A) +4'},q29:{type:'mc',correct:'B) −15°F'},q30:{type:'mc',correct:'C) (−3) × (−7)'},
+  q31:{type:'mc',correct:'C) 1/2'},q32:{type:'mc',correct:'A) −1/4'},
+  q33:{type:'typed',correct:'3.3',isText:false},q34:{type:'mc',correct:'A) −1.25'},q35:{type:'mc',correct:'A) 1/10'},
+  q36:{type:'mc',correct:'B) 2/5'},q37:{type:'mc',correct:'B) −2/3'},
+  q38:{type:'mc',correct:'C) 3/2'},q39:{type:'mc',correct:'B) +5/2'},q40:{type:'mc',correct:'B) 1/2 cup'},
+  q41:{type:'mc',correct:'B) 0.375'},q42:{type:'mc',correct:'B) 2/3'},
+  q43:{type:'mc',correct:'B) 3/5'},q44:{type:'mc',correct:'D) 7/8'},q45:{type:'mc',correct:'C) 1/8'},
+  q46:{type:'mc',correct:'C) Associative Property'},q47:{type:'mc',correct:'C) Commutative Property'},
+  q48:{type:'typed',correct:'14',isText:false},q49:{type:'typed',correct:'2.1',isText:false},q50:{type:'mc',correct:'C) 0'},
+  q51:{type:'mc',correct:'B) $77'},q52:{type:'typed',correct:'2.8',isText:false},
+  q53:{type:'mc',correct:'C) Day 3 (+$21)'},q54:{type:'typed',correct:'3120',isText:false},q55:{type:'mc',correct:'D) 1/8'},
+};
+
+// ── STORAGE ──
+const STORAGE_KEY = 'grade7_math_ch1_v2';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      s.answered = new Set(s.answered || []);
+      return s;
+    }
+  } catch(e){}
+  return { score:0, answered:new Set(), l1Done:0, l2Done:0, l3Done:0, l4Done:0, l5Done:0, l6Done:0, l7Done:0, l8Done:0, l9Done:0, l10Done:0, l11Done:0, activeTab:'l1',
+           lastWasWrong:false,
+           profile:null, questions:{} };
+}
+
+function saveState() {
+  try {
+    const s = { ...state };
+    s.answered = [...state.answered];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch(e){}
+}
+
+const state = loadState();
+
+// ── PARTICLES ──
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let animFrame;
+
+function resizeCanvas(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const COLORS = ['#00c9b1','#ff4d8d','#ffd200','#9b59f5','#fff','#00e676'];
+const SHAPES = ['circle','triangle','square','line'];
+
+function burst(x, y) {
+  for (let i = 0; i < 48; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 6;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      size: 4 + Math.random() * 8,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+      alpha: 1,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.2,
+      gravity: 0.18,
+      life: 1,
+    });
+  }
+  if (!animFrame) loop();
+}
+
+function loop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.alpha > 0.02);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy += p.gravity;
+    p.vx *= 0.98; p.alpha -= 0.018; p.rot += p.rotV;
+    ctx.save(); ctx.globalAlpha = p.alpha;
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.color; ctx.strokeStyle = p.color;
+    if (p.shape === 'circle') {
+      ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill();
+    } else if (p.shape === 'triangle') {
+      ctx.beginPath(); ctx.moveTo(0,-p.size/2); ctx.lineTo(p.size/2,p.size/2); ctx.lineTo(-p.size/2,p.size/2); ctx.closePath(); ctx.fill();
+    } else if (p.shape === 'square') {
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+    } else {
+      ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-p.size/2,0); ctx.lineTo(p.size/2,0); ctx.stroke();
+    }
+    ctx.restore();
+  });
+  animFrame = particles.length ? requestAnimationFrame(loop) : null;
+}
+
+// ── ONBOARDING ──
+let selectedAvatar = null;
+
+function buildAvatarGrid() {
+  const grid = document.getElementById('avatar-grid');
+  grid.innerHTML = '';
+  AVATARS.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'avatar-opt';
+    div.style.flexDirection = 'column';
+    div.style.gap = '4px';
+    div.innerHTML = avatarSVG(a.id, 52);
+    div.title = a.label;
+    div.onclick = () => {
+      document.querySelectorAll('.avatar-opt').forEach(el=>el.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedAvatar = a.id;
+      checkObReady();
+    };
+    grid.appendChild(div);
+  });
+}
+
+function checkObReady() {
+  const name = document.getElementById('ob-name').value.trim();
+  document.getElementById('ob-start').disabled = !name || selectedAvatar === null;
+}
+
+function startApp() {
+  const name = document.getElementById('ob-name').value.trim();
+  state.profile = { name, avatarId: selectedAvatar };
+  saveState();
+  document.getElementById('onboarding').classList.add('hide');
+  setTimeout(() => {
+    document.getElementById('onboarding').style.display = 'none';
+    launchApp();
+  }, 600);
+}
+
+// ── APP LAUNCH ──
+function launchApp() {
+  const app = document.getElementById('app');
+  app.style.display = 'block';
+  setTimeout(() => app.classList.add('visible'), 20);
+
+  const p = state.profile;
+  document.getElementById('header-name').textContent = p.name;
+  document.getElementById('header-avatar').innerHTML = avatarSVG(p.avatarId, 36);
+
+  updateScore();
+  restoreState();
+  switchTab(state.activeTab || 'l1', false);
+}
+
+
+
+// ── SCORE UI ──
+function updateScore() {
+  const el = document.getElementById('score-display');
+  el.textContent = state.score;
+  document.getElementById('total-display').textContent = state.answered.size;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+function updateProgress(lesson) {
+  const done = state[lesson+'Done'] || 0;
+  const pct = Math.round((done/5)*100);
+  document.getElementById('prog-'+lesson).style.width = pct+'%';
+  document.getElementById('prog-'+lesson+'-txt').textContent = done+' / 5';
+  if (done===5) {
+    setTimeout(() => {
+      const cel = document.getElementById('cel-'+lesson);
+      cel.classList.add('show');
+      setTimeout(() => cel.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+    }, 400);
+  }
+}
+
+function getLesson(qid) {
+  const n = parseInt(qid.replace('q',''));
+  if (n<=5)  return 'l1';
+  if (n<=10) return 'l2';
+  if (n<=15) return 'l3';
+  if (n<=20) return 'l4';
+  if (n<=25) return 'l5';
+  if (n<=30) return 'l6';
+  if (n<=35) return 'l7';
+  if (n<=40) return 'l8';
+  if (n<=45) return 'l9';
+  if (n<=50) return 'l10';
+  return 'l11';
+}
+
+function registerAnswer(qid, wasCorrect) {
+  if (state.answered.has(qid)) return;
+  state.answered.add(qid);
+  if (wasCorrect) state.score++;
+  const lesson = getLesson(qid);
+  state[lesson+'Done']++;
+  state.lastWasWrong = !wasCorrect;
+  updateScore();
+  updateProgress(lesson);
+  saveState();
+}
+
+function showFeedback(qid, html, type) {
+  const el = document.getElementById('fb-'+qid);
+  el.innerHTML = html; el.className = 'feedback show '+type;
+}
+
+// ── MC ──
+function checkMC(btn, qid, isCorrect) {
+  if (state.answered.has(qid)) return;
+  const card = document.getElementById(qid);
+  const btns = card.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  if (isCorrect) {
+    btn.classList.add('correct');
+    const rect = btn.getBoundingClientRect();
+    burst(rect.left+rect.width/2, rect.top+rect.height/2);
+    showFeedback(qid,'✅ '+FEEDBACK[qid].correct,'correct-fb');
+  } else {
+    btn.classList.add('wrong');
+    card.classList.add('shake','wrong-flash');
+    setTimeout(()=>card.classList.remove('shake','wrong-flash'),600);
+    btns.forEach(b=>{ if(b.onclick&&b.onclick.toString().includes(',true)')) b.classList.add('correct'); });
+    showFeedback(qid,'❌ '+FEEDBACK[qid].wrong,'wrong-fb');
+  }
+  state.questions[qid] = { wasCorrect:isCorrect, choiceText:btn.textContent.trim(), fbType:isCorrect?'correct-fb':'wrong-fb', fbHtml:(isCorrect?'✅ ':'❌ ')+(isCorrect?FEEDBACK[qid].correct:FEEDBACK[qid].wrong) };
+  registerAnswer(qid, isCorrect);
+}
+
+// ── TYPED ──
+function checkTyped(qid, correctAnswer, isText) {
+  if (state.answered.has(qid)) return;
+  const input = document.getElementById('inp-'+qid);
+  const btn   = document.getElementById('btn-'+qid);
+  const val   = input.value.trim().toLowerCase();
+  const correct = isText ? val===correctAnswer.toLowerCase() : Math.abs(parseFloat(val)-parseFloat(correctAnswer))<0.01;
+  btn.disabled=true; input.disabled=true;
+  if (correct) {
+    input.classList.add('correct');
+    const rect = input.getBoundingClientRect();
+    burst(rect.left+rect.width/2, rect.top+rect.height/2);
+    showFeedback(qid,'✅ '+FEEDBACK[qid].correct,'correct-fb');
+  } else {
+    input.classList.add('wrong');
+    const card = document.getElementById(qid);
+    card.classList.add('shake','wrong-flash');
+    setTimeout(()=>card.classList.remove('shake','wrong-flash'),600);
+    showFeedback(qid,'❌ '+FEEDBACK[qid].wrong,'wrong-fb');
+  }
+  state.questions[qid] = { wasCorrect:correct, inputValue:input.value, fbType:correct?'correct-fb':'wrong-fb', fbHtml:(correct?'✅ ':'❌ ')+(correct?FEEDBACK[qid].correct:FEEDBACK[qid].wrong) };
+  registerAnswer(qid, correct);
+}
+
+// ── REVEAL ──
+function revealAnswer(qid) {
+  if (state.answered.has(qid)) return;
+  const fbHtml = '📖 '+FEEDBACK[qid].reveal;
+  showFeedback(qid, fbHtml, 'reveal-fb');
+  const btn = document.querySelector('#'+qid+' .reveal-btn');
+  if (btn) btn.disabled=true;
+  state.questions[qid] = { wasCorrect:false, fbType:'reveal-fb', fbHtml };
+  registerAnswer(qid, false);
+}
+
+// ── NUMBER LINE ANIMATION ──
+function animateNL2(svg) {
+  if (!svg) return;
+  // Read delays BEFORE resetting styles (reset clears inline transitionDelay)
+  const brackets = Array.from(svg.querySelectorAll('.nl-bracket')).map(el => ({
+    el, delay: parseFloat(el.style.transitionDelay||'0')*1000 || 500
+  }));
+  const dotsLabels = Array.from(svg.querySelectorAll('.nl-dot,.nl-label')).map(el => ({
+    el, delay: parseFloat(el.style.transitionDelay||'0')*1000 || 300
+  }));
+  // Reset all to invisible; clear dash so full stroke is drawn (hidden only by opacity)
+  svg.querySelectorAll('.nl-axis,.nl-bracket').forEach(el => {
+    el.style.transition='none'; el.style.opacity='0';
+    el.style.strokeDasharray='none'; el.style.strokeDashoffset='0';
+    void el.offsetWidth;
+  });
+  svg.querySelectorAll('.nl-dot,.nl-label').forEach(el => {
+    el.style.transition='none'; el.style.opacity='0';
+    if (el.classList.contains('nl-dot')) el.style.transform='scale(0)';
+    void el.offsetWidth;
+  });
+  // Axis fades in first
+  svg.querySelectorAll('.nl-axis').forEach(el => {
+    setTimeout(()=>{ el.style.transition='opacity 0.6s ease'; el.style.opacity='1'; }, 50);
+  });
+  // Brackets use pre-read delays
+  brackets.forEach(({el, delay}) => {
+    setTimeout(()=>{ el.style.transition='opacity 0.5s ease'; el.style.opacity='1'; }, delay);
+  });
+  // Dots and labels use pre-read delays
+  dotsLabels.forEach(({el, delay}) => {
+    setTimeout(()=>{
+      el.style.transition='opacity 0.35s ease, transform 0.4s cubic-bezier(.22,.68,0,1.4)';
+      el.style.opacity='1';
+      if (el.classList.contains('nl-dot')) el.style.transform='scale(1)';
+    }, delay);
+  });
+}
+function animateNL(svgId) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  svg.querySelectorAll('.nl-axis,.nl-bracket').forEach(el => {
+    el.style.transition='none'; el.style.strokeDashoffset=el.getAttribute('stroke-dasharray')||'520';
+    void el.offsetWidth;
+    el.style.transition='stroke-dashoffset 0.9s ease';
+    setTimeout(()=>el.style.strokeDashoffset='0', 50);
+  });
+  svg.querySelectorAll('.nl-dot,.nl-label').forEach(el => {
+    el.style.transition='none'; el.style.opacity='0';
+    if (el.classList.contains('nl-dot')) el.style.transform='scale(0)';
+    const delay = parseFloat(getComputedStyle(el).transitionDelay||'0')*1000 || 300;
+    setTimeout(()=>{
+      el.style.transition='opacity 0.35s ease, transform 0.4s cubic-bezier(.22,.68,0,1.4)';
+      el.style.opacity='1';
+      if (el.classList.contains('nl-dot')) el.style.transform='scale(1)';
+    }, delay);
+  });
+}
+
+// ── TAB SWITCH ──
+let currentTab = null;
+function switchTab(id, animate=true) {
+  const tabs = ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11'];
+  const prev = currentTab;
+  currentTab = id;
+  state.activeTab = id;
+
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', tabs[i]===id);
+  });
+
+  tabs.forEach(t => {
+    const panel = document.getElementById('panel-'+t);
+    if (!panel) return;
+    if (t===id) {
+      panel.style.display='block';
+      if (animate && prev && prev!==id) {
+        const dir = tabs.indexOf(id) > tabs.indexOf(prev) ? 'slide-in-right' : 'slide-in-left';
+        panel.classList.add(dir);
+        setTimeout(()=>panel.classList.remove(dir), 450);
+      }
+      panel.classList.add('active');
+      // Animate all SVGs in the active panel
+      setTimeout(()=>{
+        const panel2 = document.getElementById('panel-'+id);
+        if (panel2) panel2.querySelectorAll('svg').forEach(svg=>{ if(svg.id) animateNL(svg.id); else { animateNL2(svg); } });
+      }, 100);
+    } else {
+      panel.classList.remove('active');
+      panel.style.display='none';
+    }
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  saveState();
+}
+
+// ── RESTORE STATE ──
+function restoreState() {
+  if (state.answered.size===0) return;
+  for (const [qid, qdata] of Object.entries(state.questions)) {
+    const meta = Q_META[qid]; if (!meta) continue;
+    showFeedback(qid, qdata.fbHtml, qdata.fbType);
+    if (meta.type==='mc') {
+      const card=document.getElementById(qid); if(!card) continue;
+      card.querySelectorAll('.choice-btn').forEach(b=>{
+        b.disabled=true;
+        if(b.textContent.trim()===qdata.choiceText) b.classList.add(qdata.wasCorrect?'correct':'wrong');
+        if(b.onclick&&b.onclick.toString().includes(',true)')) b.classList.add('correct');
+      });
+    } else if (meta.type==='typed') {
+      const input=document.getElementById('inp-'+qid), btn=document.getElementById('btn-'+qid);
+      if(input){input.value=qdata.inputValue||'';input.disabled=true;input.classList.add(qdata.wasCorrect?'correct':'wrong');}
+      if(btn) btn.disabled=true;
+    } else if (meta.type==='reveal') {
+      const btn=document.querySelector('#'+qid+' .reveal-btn'); if(btn) btn.disabled=true;
+    }
+  }
+  ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11'].forEach(lesson => {
+    const done = state[lesson+'Done'] || 0;
+    if (done===5) {
+      document.getElementById('cel-'+lesson).classList.add('show');
+      document.getElementById('prog-'+lesson).style.width='100%';
+      document.getElementById('prog-'+lesson+'-txt').textContent='5 / 5';
+    } else {
+      const pct=Math.round((done/5)*100);
+      document.getElementById('prog-'+lesson).style.width=pct+'%';
+      document.getElementById('prog-'+lesson+'-txt').textContent=done+' / 5';
+    }
+  });
+  updateScore();
+}
+
+// ── RESET ──
+function resetProgress() {
+  if (!confirm('Reset all progress? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY); location.reload();
+}
+
+// ── BOOT ──
+buildAvatarGrid();
+document.getElementById('app').style.display = 'none';
+
+if (state.profile) {
+  document.getElementById('onboarding').style.display = 'none';
+  launchApp();
+}
+
+// ── TAB SCROLL ARROWS ──
+function scrollTabs(dir) {
+  const row = document.getElementById('tabs-row');
+  row.scrollBy({ left: dir * 200, behavior: 'smooth' });
+}
+function updateTabArrows() {
+  const row = document.getElementById('tabs-row');
+  if (!row) return;
+  const atStart = row.scrollLeft <= 4;
+  const atEnd   = row.scrollLeft >= row.scrollWidth - row.clientWidth - 4;
+  document.getElementById('tabs-prev').classList.toggle('hidden', atStart);
+  document.getElementById('tabs-next').classList.toggle('hidden', atEnd);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const row = document.getElementById('tabs-row');
+  if (row) {
+    row.addEventListener('scroll', updateTabArrows, { passive: true });
+    // Defer so layout is fully painted before measuring scrollWidth
+    requestAnimationFrame(() => requestAnimationFrame(updateTabArrows));
+  }
+});
+
+// ── AVATAR CHANGE MODAL ──
+let _pendingAvatar = null;
+
+function openAvatarModal() {
+  _pendingAvatar = state.profile.avatarId;
+  const modal = document.getElementById('avatar-modal');
+  const grid  = document.getElementById('avatar-modal-grid');
+  grid.innerHTML = '';
+  AVATARS.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'avatar-opt' + (a.id === _pendingAvatar ? ' selected' : '');
+    div.innerHTML = avatarSVG(a.id, 52);
+    div.onclick = () => {
+      grid.querySelectorAll('.avatar-opt').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      _pendingAvatar = a.id;
+    };
+    grid.appendChild(div);
+  });
+  modal.classList.add('open');
+}
+
+function saveAvatarChange() {
+  if (_pendingAvatar) {
+    state.profile.avatarId = _pendingAvatar;
+    saveState();
+    document.getElementById('header-avatar').innerHTML = avatarSVG(_pendingAvatar, 36);
+  }
+  document.getElementById('avatar-modal').classList.remove('open');
+}
+
+function closeAvatarModal() {
+  document.getElementById('avatar-modal').classList.remove('open');
+}
+</script>
+
+<!-- Avatar change modal -->
+<div id="avatar-modal">
+  <div class="avatar-modal-box">
+    <h3>Choose your avatar</h3>
+    <div class="avatar-grid" id="avatar-modal-grid"></div>
+    <div class="avatar-modal-actions">
+      <button class="btn-cancel-av" onclick="closeAvatarModal()">Cancel</button>
+      <button class="btn-save-av" onclick="saveAvatarChange()">Save</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
