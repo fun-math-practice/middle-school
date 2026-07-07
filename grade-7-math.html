@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grade 7 Math · Chapter 1</title>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="90965829-3c0d-42c1-9126-04ac167ce231"></script>
+<title>Grade 7 Math</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;700;800&display=swap');
 
@@ -2311,10 +2312,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const row = document.getElementById('tabs-row');
   if (row) {
     row.addEventListener('scroll', updateTabArrows, { passive: true });
-    // Defer so layout is fully painted before measuring scrollWidth
     requestAnimationFrame(() => requestAnimationFrame(updateTabArrows));
+    setTimeout(updateTabArrows, 300); // fallback for slow font/layout paint
   }
 });
+window.addEventListener('load', updateTabArrows);
 
 // ── AVATAR CHANGE MODAL ──
 let _pendingAvatar = null;
