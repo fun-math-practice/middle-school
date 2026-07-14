@@ -11,7 +11,7 @@
 
   gtag('config', 'G-JBQK345Y7E');
 </script>
-  
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- <script defer src="https://cloud.umami.is/script.js" data-website-id="90965829-3c0d-42c1-9126-04ac167ce231"></script> -->
@@ -2050,6 +2050,7 @@ function launchApp() {
   updateScore();
   restoreState();
   switchTab(state.activeTab || 'l1', false);
+  setTimeout(updateTabArrows, 50);
 }
 
 
